@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import fnmatch
 import os
 import shutil
@@ -8,6 +10,11 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+
+if 'FileNotFoundError' not in globals():
+    #pylint:disable=redefined-builtin
+    FileNotFoundError = IOError
 
 
 class PManException(Exception):
@@ -153,7 +160,6 @@ def is_frozen():
     return __IS_FROZEN
 
 
-
 def create_project(projectdir):
     if is_frozen():
         raise FrozenEnvironmentError()
@@ -249,7 +255,7 @@ def run(config=None):
     PMan(config=config).run()
 
 
-class Converter:
+class Converter(object):
     def __init__(self, supported_exts, ext_dst_map=None):
         self.supported_exts = supported_exts
         self.ext_dst_map = ext_dst_map if ext_dst_map is not None else {}
@@ -289,7 +295,7 @@ def converter_copy(_config, _user_config, srcdir, dstdir, assets):
         shutil.copyfile(src, dst)
 
 
-class PMan:
+class PMan(object):
     def __init__(self, config=None, config_startdir=None):
         if config:
             self.config = config
@@ -345,6 +351,7 @@ class PMan:
             raise FrozenEnvironmentError()
 
         if hasattr(time, 'perf_counter'):
+            #pylint:disable=no-member
             stime = time.perf_counter()
         else:
             stime = time.time()
@@ -415,6 +422,7 @@ class PMan:
             converter_copy(self.config, self.user_config, srcdir, dstdir, ext_asset_map[ext])
 
         if hasattr(time, 'perf_counter'):
+            #pylint:disable=no-member
             etime = time.perf_counter()
         else:
             etime = time.time()
