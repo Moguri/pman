@@ -178,7 +178,8 @@ def create_project(projectdir):
     write_config(config)
 
     pmandir = os.path.dirname(__file__)
-    templatedir = 'templates'
+    templatedir = os.path.join(pmandir, 'templates')
+    bpmodpath = os.path.join(projectdir, 'game/blenderpanda')
 
     print("Creating directories...")
 
@@ -190,8 +191,7 @@ def create_project(projectdir):
     bpanda_mod_files = [
         os.path.join(templatedir, '__init__.py'),
         os.path.join(templatedir, 'bpbase.py'),
-        'rendermanager.py',
-        'pman',
+        os.path.join(pmandir, 'rendermanager.py'),
     ]
 
     dirs = [os.path.join(projectdir, i) for i in dirs]
@@ -204,7 +204,7 @@ def create_project(projectdir):
             os.mkdir(d)
 
     print("Creating main.py")
-    with open(os.path.join(pmandir, '..', templatedir, 'main.py')) as f:
+    with open(os.path.join(templatedir, 'main.py')) as f:
         main_data = f.read()
 
     mainpath = os.path.join(projectdir, 'game', 'main.py')
@@ -215,7 +215,6 @@ def create_project(projectdir):
             f.write(main_data)
         print("\tmain.py created at {}".format(mainpath))
 
-    bpmodpath = os.path.join(projectdir, 'game/blenderpanda')
     if os.path.exists(bpmodpath):
         print("Updating blenderpanda module")
         shutil.rmtree(bpmodpath)
@@ -225,7 +224,7 @@ def create_project(projectdir):
     for copy_file in bpanda_mod_files:
         bname = os.path.basename(copy_file)
         print("\tCopying over {}".format(bname))
-        cfsrc = os.path.join(os.path.dirname(__file__), '..', copy_file)
+        cfsrc = os.path.join(pmandir, copy_file)
         cfdst = os.path.join(projectdir, 'game', 'blenderpanda', bname)
         print(cfsrc, cfdst)
         if os.path.isdir(cfsrc):
@@ -233,6 +232,13 @@ def create_project(projectdir):
         else:
             shutil.copy(cfsrc, cfdst)
         print("\t\t{} created at {}".format(bname, cfdst))
+
+    print("Copying pman")
+    pmantarget = os.path.join(bpmodpath, 'pman')
+    if os.path.exists(pmantarget):
+        shutil.rmtree(pmantarget)
+    os.mkdir(pmantarget)
+    shutil.copy(__file__, os.path.join(pmantarget, '__init__.py'))
 
 
 def get_abs_path(config, path):
