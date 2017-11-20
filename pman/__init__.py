@@ -238,7 +238,10 @@ def create_project(projectdir):
         shutil.rmtree(pmantarget)
     os.mkdir(pmantarget)
     shutil.copy(__file__, os.path.join(pmantarget, '__init__.py'))
-    shutil.copy(os.path.join(pmandir, 'rendermanager.py'), os.path.join(pmantarget, 'rendermanager.py'))
+    shutil.copy(
+        os.path.join(pmandir, 'rendermanager.py'),
+        os.path.join(pmantarget, 'rendermanager.py')
+    )
 
 
 def get_abs_path(config, path):
