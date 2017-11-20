@@ -1,17 +1,17 @@
 import os
-from .rendermanager import create_render_manager
 from . import pman
+from .pman import rendermanager
 import panda3d.core as p3d
 
 
 class BPBase:
     def __init__(self, base, config):
-        self.rendermanager = create_render_manager(base, config)
+        self.rendermanager = rendermanager.create_render_manager(base, config)
 
 
 def init(base):
     config = pman.get_config()
-    if not pman.is_frozen() and base.appRunner is None and config.getboolean('run', 'auto_build'):
+    if not pman.is_frozen() and base.appRunner is None and bool(config['run']['auto_build']):
         pman.build(config)
 
     # Add export directory to model path

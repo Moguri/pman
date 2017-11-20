@@ -191,7 +191,6 @@ def create_project(projectdir):
     bpanda_mod_files = [
         os.path.join(templatedir, '__init__.py'),
         os.path.join(templatedir, 'bpbase.py'),
-        os.path.join(pmandir, 'rendermanager.py'),
     ]
 
     dirs = [os.path.join(projectdir, i) for i in dirs]
@@ -239,6 +238,7 @@ def create_project(projectdir):
         shutil.rmtree(pmantarget)
     os.mkdir(pmantarget)
     shutil.copy(__file__, os.path.join(pmantarget, '__init__.py'))
+    shutil.copy(os.path.join(pmandir, 'rendermanager.py'), os.path.join(pmantarget, 'rendermanager.py'))
 
 
 def get_abs_path(config, path):
