@@ -277,7 +277,7 @@ class Converter(object):
 
 @Converter(['.blend'], {'.blend': '.bam'})
 def converter_blend_bam(_config, user_config, srcdir, dstdir, _assets):
-    use_last_path = user_config.getboolean('blender', 'use_last_path')
+    use_last_path = user_config['blender']['use_last_path']
     blender_path = user_config['blender']['last_path'] if use_last_path else 'blender'
     args = [
         blender_path,
