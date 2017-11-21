@@ -6,6 +6,10 @@ import shutil
 import subprocess
 import time
 from collections import OrderedDict
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 from . import toml
 
@@ -51,7 +55,7 @@ _CONFIG_DEFAULTS = OrderedDict([
     ('build', OrderedDict([
         ('asset_dir', 'assets/'),
         ('export_dir', 'game/assets/'),
-        ('ignore_patterns', '*.blend1, *.blend2'),
+        ('ignore_patterns', ['*.blend1', '*.blend2']),
     ])),
     ('run', OrderedDict([
         ('main_file', 'game/main.py'),
@@ -66,6 +70,41 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
         ('use_last_path', True),
     ])),
 ])
+
+
+def __py2_read_dict(config, d):
+    for section, options in d.items():
+        config.add_section(section)
+
+        for option, value in options.items():
+            config.set(section, option, value)
+
+
+def _convert_conf_to_toml(configpath, defaults):
+    config = configparser.ConfigParser()
+    if hasattr(config, 'read_dict'):
+        config.read_dict(defaults)
+    else:
+        __py2_read_dict(config, defaults)
+    config.read(configpath)
+
+    config.add_section('internal')
+    config.set('internal', 'projectdir', os.path.dirname(configpath))
+    confdict = {
+        s: dict(config.items(s))
+        for s in config.sections()
+    }
+
+    if 'build' in confdict:
+        confdict['build']['ignore_patterns'] = [
+            i.strip() for i in confdict['build']['ignore_patterns'].split(',')
+        ]
+    if 'run' in confdict:
+        confdict['run']['auto_build'] = config.getboolean('run', 'auto_build')
+        confdict['run']['auto_save'] = config.getboolean('run', 'auto_save')
+    if 'blender' in confdict:
+        confdict['blender']['use_last_path'] = config.getboolean('blender', 'use_last_path')
+    return confdict
 
 
 def _get_config(startdir, conf_name, defaults):
@@ -83,8 +122,19 @@ def _get_config(startdir, conf_name, defaults):
         if cdir.strip() and conf_name in os.listdir(cdir):
             configpath = os.path.join(cdir, conf_name)
 
-            confdict = defaults.copy()
-            confdict.update(toml.load(configpath))
+            with open(configpath) as f:
+                confdata = f.read()
+                istoml = (
+                    '"' in confdata or
+                    "'" in confdata
+                )
+
+            if istoml:
+                confdict = defaults.copy()
+                confdict.update(toml.load(configpath))
+            else:
+                confdict = _convert_conf_to_toml(configpath, defaults)
+
             confdict['internal'] = {
                 'projectdir': os.path.dirname(configpath),
             }
@@ -363,7 +413,7 @@ class PMan(object):
         print("Read assets from: {}".format(srcdir))
         print("Export them to: {}".format(dstdir))
 
-        ignore_patterns = [i.strip() for i in self.config['build']['ignore_patterns'].split(',')]
+        ignore_patterns = self.config['build']['ignore_patterns']
         print("Ignoring file patterns: {}".format(ignore_patterns))
 
         # Gather files and group by extension
