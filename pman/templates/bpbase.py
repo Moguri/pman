@@ -11,7 +11,7 @@ class BPBase:
 
 def init(base):
     config = pman.get_config()
-    if not pman.is_frozen() and base.appRunner is None and bool(config['run']['auto_build']):
+    if not pman.is_frozen() and base.appRunner is None and config['run']['auto_build']:
         pman.build(config)
 
     # Add export directory to model path
