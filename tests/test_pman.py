@@ -12,10 +12,11 @@ def projectdir(tmpdir):
     return tmpdir.strpath
 
 
-def test_get_conf(tmpdir):
+def test_conf(tmpdir):
     os.chdir(tmpdir.strpath)
     open('.pman', 'w').close()
-    _ = pman.get_config()
+    conf = pman.get_config()
+    pman.write_config(conf)
 
 
 def test_create_project(tmpdir):

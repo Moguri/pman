@@ -6,10 +6,8 @@ import shutil
 import subprocess
 import time
 from collections import OrderedDict
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+
+from . import toml
 
 
 if 'FileNotFoundError' not in globals():
@@ -70,13 +68,6 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
 ])
 
 
-def __py2_read_dict(config, d):
-    for section, options in d.items():
-        config.add_section(section)
-
-        for option, value in options.items():
-            config.set(section, option, value)
-
 def _get_config(startdir, conf_name, defaults):
     try:
         if startdir is None:
@@ -91,19 +82,13 @@ def _get_config(startdir, conf_name, defaults):
         cdir = os.sep.join(dirs)
         if cdir.strip() and conf_name in os.listdir(cdir):
             configpath = os.path.join(cdir, conf_name)
-            config = configparser.ConfigParser()
-            if hasattr(config, 'read_dict'):
-                config.read_dict(defaults)
-            else:
-                __py2_read_dict(config, defaults)
-            config.read(configpath)
 
-            config.add_section('internal')
-            config.set('internal', 'projectdir', os.path.dirname(configpath))
-            confdict = {
-                s: dict(config.items(s))
-                for s in config.sections()
+            confdict = defaults.copy()
+            confdict.update(toml.load(configpath))
+            confdict['internal'] = {
+                'projectdir': os.path.dirname(configpath),
             }
+
             return confdict
 
         dirs.pop()
@@ -140,12 +125,11 @@ def get_user_config(startdir=None):
 
 
 def _write_config(config, conf_name):
-    writecfg = configparser.ConfigParser()
-    writecfg.read_dict(config)
-    writecfg.remove_section('internal')
+    writecfg = config.copy()
+    del writecfg['internal']
 
     with open(os.path.join(config['internal']['projectdir'], conf_name), 'w') as f:
-        writecfg.write(f)
+        toml.dump(writecfg, f)
 
 
 def write_config(config):
