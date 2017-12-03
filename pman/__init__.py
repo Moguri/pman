@@ -13,7 +13,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from . import hooks
 from . import toml
 
 
@@ -59,6 +58,7 @@ _CONFIG_DEFAULTS = OrderedDict([
         ('asset_dir', 'assets/'),
         ('export_dir', 'game/assets/'),
         ('ignore_patterns', ['*.blend1', '*.blend2']),
+        ('converter_hooks', ['pman.hooks.converter_blend_bam']),
     ])),
     ('run', OrderedDict([
         ('main_file', 'game/main.py'),
@@ -91,8 +91,6 @@ def _convert_conf_to_toml(configpath, defaults):
         __py2_read_dict(config, defaults)
     config.read(configpath)
 
-    config.add_section('internal')
-    config.set('internal', 'projectdir', os.path.dirname(configpath))
     confdict = {
         s: dict(config.items(s))
         for s in config.sections()
@@ -108,6 +106,19 @@ def _convert_conf_to_toml(configpath, defaults):
     if 'blender' in confdict:
         confdict['blender']['use_last_path'] = config.getboolean('blender', 'use_last_path')
     return confdict
+
+
+def _update_conf(config):
+    if 'general' in config:
+        if 'render_plugin' in config['general'] and '/' in config['general']['render_plugin']:
+            # Convert from path to module
+            renderplugin = config['general']['render_plugin']
+            rppath = get_abs_path(config, renderplugin)
+            maindir = os.path.dirname(get_abs_path(config, config['run']['main_file']))
+            rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
+            module_parts = rppath.split(os.sep)
+            modname = '.'.join(module_parts)
+            config['general']['render_plugin'] = modname
 
 
 def _get_config(startdir, conf_name, defaults):
@@ -129,7 +140,8 @@ def _get_config(startdir, conf_name, defaults):
                 confdata = f.read()
                 istoml = (
                     '"' in confdata or
-                    "'" in confdata
+                    "'" in confdata or
+                    confdata == ''
                 )
 
             if istoml:
@@ -144,6 +156,8 @@ def _get_config(startdir, conf_name, defaults):
             confdict['internal'] = {
                 'projectdir': os.path.dirname(configpath),
             }
+
+            _update_conf(confdict)
 
             return confdict
 
@@ -333,10 +347,18 @@ class PMan(object):
             self.config = get_config(config_startdir)
             self.user_config = get_user_config(config_startdir)
 
-        # TODO: Get these from config
-        self.converters = [
-            hooks.converter_blend_bam,
-        ]
+        self.converters = self._init_hooks(self.config['build']['converter_hooks'])
+
+    def _init_hooks(self, hooks_list):
+        new_hooks = []
+        for hook in hooks_list:
+            modparts = hook.split('.')
+            module = '.'.join(modparts[:-1])
+            func = modparts[-1]
+            mod = self.load_module(module)
+            new_hooks.append(getattr(mod, func))
+
+        return new_hooks
 
 
     def get_abs_path(self, path):
@@ -379,6 +401,7 @@ class PMan(object):
         mod = None
         module_parts = modname.split('.')
         maindir = os.path.dirname(self.get_abs_path(self.config['run']['main_file']))
+        pmandir = os.path.dirname(__file__) if not is_frozen() else None
         fix_path = False
 
         def _load_module(modname, modinfo):
@@ -401,7 +424,10 @@ class PMan(object):
 
             mod = None
             for modname in module_parts:
-                modpath = None if mod is None else mod.__path__
+                if modname == 'pman':
+                    modpath = [os.path.join(pmandir, '..')]
+                else:
+                    modpath = None if mod is None else mod.__path__
                 modinfo = imp.find_module(modname, modpath)
                 mod = _load_module(modname, modinfo)
 
