@@ -133,8 +133,11 @@ def _get_config(startdir, conf_name, defaults):
                 )
 
             if istoml:
-                confdict = defaults.copy()
-                confdict.update(toml.load(configpath))
+                tomldict = toml.load(configpath)
+                confdict = {
+                    k: dict(defaults.get(k, {}), **tomldict.get(k, {}))
+                    for k in defaults.keys() | tomldict.keys()
+                }
             else:
                 confdict = _convert_conf_to_toml(configpath, defaults)
 
