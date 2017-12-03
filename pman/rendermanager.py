@@ -76,24 +76,12 @@ def create_render_manager(base, config=None):
     rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
     module_parts = rppath.split(os.sep)
 
-    def load_module(modname, modinfo):
-        mod = None
-        try:
-            mod = imp.load_module(modname, *modinfo)
-        finally:
-            if modinfo[0]:
-                modinfo[0].close()
-
-        return mod
-    if pman.is_frozen():
-        modname = '.'.join(module_parts)
-        modinfo = imp.find_module(modname)
-        mod = load_module(modname, modinfo)
-    else:
-        mod = None
-        for modname in module_parts:
-            modpath = None if mod is None else mod.__path__
-            modinfo = imp.find_module(modname, modpath)
-            mod = load_module(modname, modinfo)
+    modname = '.'.join(module_parts)
+    print(modname)
+    try:
+        mod = pman.load_module(modname, config)
+    except ImportError:
+        print("RenderManager: Could not find module ({}), falling back to basic plugin".format(modname))
+        return BasicRenderManager(base)
 
     return mod.get_plugin()(base)

@@ -1,9 +1,11 @@
 from __future__ import print_function
 
+import imp
 import fnmatch
 import os
 import shutil
 import subprocess
+import sys
 import time
 from collections import OrderedDict
 try:
@@ -297,6 +299,10 @@ def get_python_program(config=None):
     return PMan(config=config).get_python_program()
 
 
+def load_module(modname, config=None):
+    return PMan(config=config).load_module(modname)
+
+
 def build(config=None):
     PMan(config=config).build()
 
@@ -365,6 +371,41 @@ class PMan(object):
 
         # We couldn't find a python program to run
         raise CouldNotFindPythonError('Could not find a usable Python install')
+
+    def load_module(self, modname):
+        mod = None
+        module_parts = modname.split('.')
+        maindir = os.path.dirname(self.get_abs_path(self.config['run']['main_file']))
+        fix_path = False
+
+        def _load_module(modname, modinfo):
+            mod = None
+            try:
+                mod = imp.load_module(modname, *modinfo)
+            finally:
+                if modinfo[0]:
+                    modinfo[0].close()
+
+            return mod
+
+        if is_frozen():
+            modinfo = imp.find_module(modname)
+            mod = _load_module(modname, modinfo)
+        else:
+            if maindir not in sys.path:
+                sys.path.append(maindir)
+                fix_path = True
+
+            mod = None
+            for modname in module_parts:
+                modpath = None if mod is None else mod.__path__
+                modinfo = imp.find_module(modname, modpath)
+                mod = _load_module(modname, modinfo)
+
+        if fix_path:
+            sys.path.remove(maindir)
+
+        return mod
 
     def build(self):
         if is_frozen():
