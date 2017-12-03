@@ -227,6 +227,12 @@ def create_project(projectdir):
         os.path.join(templatedir, 'bpbase.py'),
     ]
 
+    pman_files = [
+        '__init__.py',
+        'rendermanager.py',
+        'toml.py',
+    ]
+
     dirs = [os.path.join(projectdir, i) for i in dirs]
 
     for d in dirs:
@@ -271,11 +277,11 @@ def create_project(projectdir):
     if os.path.exists(pmantarget):
         shutil.rmtree(pmantarget)
     os.mkdir(pmantarget)
-    shutil.copy(__file__, os.path.join(pmantarget, '__init__.py'))
-    shutil.copy(
-        os.path.join(pmandir, 'rendermanager.py'),
-        os.path.join(pmantarget, 'rendermanager.py')
-    )
+    for copy_file in pman_files:
+        shutil.copy(
+            os.path.join(pmandir, copy_file),
+            os.path.join(pmantarget, copy_file)
+        )
 
 
 def get_abs_path(config, path):
