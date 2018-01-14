@@ -311,10 +311,32 @@ def get_abs_path(config, path):
 def get_rel_path(config, path):
     return PMan(config=config).get_rel_path(path)
 
+def get_python_program(_config):
+    python_programs = [
+        'ppython',
+        'python3',
+        'python',
+        'python2',
+    ]
 
-def get_python_program(config=None):
-    return PMan(config=config).get_python_program()
+    # Check to see if there is a version of Python that can import panda3d
+    for pyprog in python_programs:
+        args = [
+            pyprog,
+            '-c',
+            'import panda3d.core; import direct',
+        ]
+        with open(os.devnull, 'w') as f:
+            try:
+                retcode = subprocess.call(args, stderr=f)
+            except FileNotFoundError:
+                retcode = 1
 
+        if retcode == 0:
+            return pyprog
+
+    # We couldn't find a python program to run
+    raise CouldNotFindPythonError('Could not find a usable Python install')
 
 def load_module(modname, config=None):
     return PMan(config=config).load_module(modname)
@@ -369,33 +391,6 @@ class PMan(object):
 
     def get_rel_path(self, path):
         return os.path.relpath(path, self.config['internal']['projectdir'])
-
-    def get_python_program(self):
-        python_programs = [
-            'ppython',
-            'python3',
-            'python',
-            'python2',
-        ]
-
-        # Check to see if there is a version of Python that can import panda3d
-        for pyprog in python_programs:
-            args = [
-                pyprog,
-                '-c',
-                'import panda3d.core; import direct',
-            ]
-            with open(os.devnull, 'w') as f:
-                try:
-                    retcode = subprocess.call(args, stderr=f)
-                except FileNotFoundError:
-                    retcode = 1
-
-            if retcode == 0:
-                return pyprog
-
-        # We couldn't find a python program to run
-        raise CouldNotFindPythonError('Could not find a usable Python install')
 
     def load_module(self, modname):
         mod = None
