@@ -148,7 +148,7 @@ def _get_config(startdir, conf_name, defaults):
                 tomldict = toml.load(configpath)
                 confdict = {
                     k: dict(defaults.get(k, {}), **tomldict.get(k, {}))
-                    for k in defaults.keys() | tomldict.keys()
+                    for k in set(defaults.keys()) | set(tomldict.keys())
                 }
             else:
                 confdict = _convert_conf_to_toml(configpath, defaults)
@@ -519,6 +519,6 @@ class PMan(object):
 
         mainfile = self.get_abs_path(self.config['run']['main_file'])
         print("Running main file: {}".format(mainfile))
-        args = [self.get_python_program(), mainfile]
+        args = [get_python_program(None), mainfile]
         #print("Args: {}".format(args))
         subprocess.Popen(args, cwd=self.config['internal']['projectdir'])
