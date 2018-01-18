@@ -8,8 +8,10 @@ def main():
     # Make sure BlenderPanda addon is enabled
     addon_utils.enable("BlenderPanda", persistent=True)
 
-    #print(sys.argv)
-    srcdir, dstdir = sys.argv[1], sys.argv[2]
+    args = sys.argv[sys.argv.index('--')+1:]
+
+    #print(args)
+    srcdir, dstdir = args[0], args[1]
 
     #print('Exporting:', srcdir)
     #print('Export to:', dstdir)
