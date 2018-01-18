@@ -11,14 +11,14 @@ except ImportError:
 
 
 _SRGB_VERT = """
-#version 130
+#version 120
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 
-in vec4 p3d_Vertex;
-in vec2 p3d_MultiTexCoord0;
+attribute vec4 p3d_Vertex;
+attribute vec2 p3d_MultiTexCoord0;
 
-out vec2 texcoord;
+varying vec2 texcoord;
 
 void main() {
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
@@ -28,17 +28,16 @@ void main() {
 
 
 _SRGB_FRAG = """
-#version 130
+#version 120
 
 uniform sampler2D tex;
 
-in vec2 texcoord;
-out vec4 o_color;
+varying vec2 texcoord;
 
 
 void main() {
-    vec3 color = pow(texture(tex, texcoord).rgb, vec3(1.0/2.2));
-    o_color = vec4(color, 1.0);
+    vec3 color = pow(texture2D(tex, texcoord).rgb, vec3(1.0/2.2));
+    gl_FragColor = vec4(color, 1.0);
 }
 """
 
