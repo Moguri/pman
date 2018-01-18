@@ -251,6 +251,8 @@ def create_project(projectdir):
         '__init__.py',
         'rendermanager.py',
         'toml.py',
+        'hooks.py',
+        'pman_build.py',
     ]
 
     dirs = [os.path.join(projectdir, i) for i in dirs]
