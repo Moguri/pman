@@ -498,15 +498,21 @@ class PMan(object):
                 print('Adding {} to conversion list to satisfy {}'.format(src, dst))
                 ext_asset_map[ext].append(os.path.join(root, asset))
 
-        # Run conversion hooks
+        # Find which extensions have hooks available
+        convert_hooks = []
         for ext, converter in ext_converter_map.items():
             if ext in ext_asset_map:
-                converter(self.config, self.user_config, srcdir, dstdir, ext_asset_map[ext])
+                convert_hooks.append((converter, ext_asset_map[ext]))
                 del ext_asset_map[ext]
 
         # Copy what is left
         for ext in ext_asset_map:
             converter_copy(self.config, self.user_config, srcdir, dstdir, ext_asset_map[ext])
+
+        # Now run hooks that non-converted assets are in place (copied)
+        for convert_hook in convert_hooks:
+            convert_hook[0](self.config, self.user_config, srcdir, dstdir, convert_hook[1])
+
 
         if hasattr(time, 'perf_counter'):
             #pylint:disable=no-member
