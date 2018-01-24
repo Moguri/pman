@@ -72,6 +72,9 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
         ('last_path', 'blender'),
         ('use_last_path', True),
     ])),
+    ('python', OrderedDict([
+        ('path', ''),
+    ])),
 ])
 
 
@@ -313,13 +316,19 @@ def get_abs_path(config, path):
 def get_rel_path(config, path):
     return PMan(config=config).get_rel_path(path)
 
-def get_python_program(_config):
+def get_python_program(config=None):
     python_programs = [
         'ppython',
         'python3',
         'python',
         'python2',
     ]
+
+    if config is not None:
+        user_config = get_user_config(config['internal']['projectdir'])
+        confpy = user_config['python']['path']
+        if confpy:
+            python_programs.insert(0, confpy)
 
     # Check to see if there is a version of Python that can import panda3d
     for pyprog in python_programs:
@@ -372,6 +381,7 @@ class PMan(object):
             self.user_config = get_user_config(config_startdir)
 
         self.converters = self._init_hooks(self.config['build']['converter_hooks'])
+
 
     def _init_hooks(self, hooks_list):
         new_hooks = []
@@ -527,6 +537,6 @@ class PMan(object):
 
         mainfile = self.get_abs_path(self.config['run']['main_file'])
         print("Running main file: {}".format(mainfile))
-        args = [get_python_program(None), mainfile]
+        args = [get_python_program(self.config), mainfile]
         #print("Args: {}".format(args))
         subprocess.Popen(args, cwd=self.config['internal']['projectdir'])
