@@ -78,7 +78,7 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
 ])
 
 
-def _convert_conf_to_toml(configpath, defaults):
+def _convert_conf_to_toml(configpath):
     config = configparser.ConfigParser()
     config.read(configpath)
 
@@ -138,7 +138,7 @@ def _get_config(startdir, conf_name, defaults):
             if istoml:
                 confdict = toml.load(configpath)
             else:
-                confdict = _convert_conf_to_toml(configpath, defaults)
+                confdict = _convert_conf_to_toml(configpath)
             confdict = {
                 k: dict(defaults.get(k, {}), **confdict.get(k, {}))
                 for k in set(defaults.keys()) | set(confdict.keys())
