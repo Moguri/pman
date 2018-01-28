@@ -78,20 +78,8 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
 ])
 
 
-def __py2_read_dict(config, d):
-    for section, options in d.items():
-        config.add_section(section)
-
-        for option, value in options.items():
-            config.set(section, option, value)
-
-
 def _convert_conf_to_toml(configpath, defaults):
     config = configparser.ConfigParser()
-    if hasattr(config, 'read_dict'):
-        config.read_dict(defaults)
-    else:
-        __py2_read_dict(config, defaults)
     config.read(configpath)
 
     confdict = {
@@ -148,13 +136,13 @@ def _get_config(startdir, conf_name, defaults):
                 )
 
             if istoml:
-                tomldict = toml.load(configpath)
-                confdict = {
-                    k: dict(defaults.get(k, {}), **tomldict.get(k, {}))
-                    for k in set(defaults.keys()) | set(tomldict.keys())
-                }
+                confdict = toml.load(configpath)
             else:
                 confdict = _convert_conf_to_toml(configpath, defaults)
+            confdict = {
+                k: dict(defaults.get(k, {}), **confdict.get(k, {}))
+                for k in set(defaults.keys()) | set(confdict.keys())
+            }
 
             confdict['internal'] = {
                 'projectdir': os.path.dirname(configpath),
