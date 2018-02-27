@@ -50,6 +50,8 @@ class BasicRenderManager:
         self.base = base
         self.base.render.set_shader_auto()
 
+        p3d.Texture.setTexturesPower2(p3d.ATS_none)
+
         manager = FilterManager(base.win, base.cam)
         self.post_tex = p3d.Texture()
         post_quad = manager.renderSceneInto(colortex=self.post_tex)
