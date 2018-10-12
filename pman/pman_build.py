@@ -1,6 +1,7 @@
 import sys
 import os
 
+#pylint:disable=import-error
 import bpy
 import addon_utils
 
@@ -36,7 +37,9 @@ def main():
                 except FileExistsError:
                     pass
                 bpy.ops.wm.open_mainfile(filepath=src)
-                bpy.ops.panda_engine.export_bam(filepath=dst, copy_images=False, skip_up_to_date=True)
+                bpy.ops.panda_engine.export_bam(
+                    filepath=dst, copy_images=False, skip_up_to_date=True
+                )
 
 
 if __name__ == '__main__':

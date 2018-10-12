@@ -1,8 +1,8 @@
 language: python
+sudo: required
+dist: xenial
 python:
     - "2.7"
     - "3.6"
-install:
-    - pip install -r requirements.txt
-script:
-    - python setup.py test
+    - "3.7"
+script: python setup.py test

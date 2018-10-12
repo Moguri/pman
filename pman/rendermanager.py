@@ -1,4 +1,3 @@
-import imp
 import os
 
 try:
@@ -7,7 +6,7 @@ except ImportError:
     try:
         from . import pman
     except ImportError:
-        import blenderpanda.pman as pman
+        from blenderpanda import pman
 
 
 _SRGB_VERT = """
@@ -44,6 +43,7 @@ void main() {
 
 class BasicRenderManager:
     def __init__(self, base):
+        #pylint:disable=import-error
         import panda3d.core as p3d
         from direct.filter.FilterManager import FilterManager
 
