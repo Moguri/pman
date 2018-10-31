@@ -53,6 +53,7 @@ _CONFIG_DEFAULTS = OrderedDict([
     ('general', OrderedDict([
         ('name', 'Game'),
         ('render_plugin', ''),
+        ('material_mode', 'legacy'),
     ])),
     ('build', OrderedDict([
         ('asset_dir', 'assets/'),
