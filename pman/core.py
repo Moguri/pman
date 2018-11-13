@@ -206,9 +206,12 @@ def is_frozen():
     return __IS_FROZEN
 
 
-def create_project(projectdir):
+def create_project(projectdir='.'):
     if is_frozen():
         raise FrozenEnvironmentError()
+
+    if not os.path.exists(projectdir):
+        os.makedirs(projectdir)
 
     confpath = os.path.join(projectdir, '.pman')
     if os.path.exists(confpath):
@@ -217,7 +220,7 @@ def create_project(projectdir):
         print("Creating new project in {}".format(projectdir))
 
         # Touch config file to make sure it is present
-        with open(confpath, 'a') as f:
+        with open(confpath, 'a') as _:
             pass
 
     config = get_config(projectdir)
@@ -225,26 +228,12 @@ def create_project(projectdir):
 
     pmandir = os.path.dirname(__file__)
     templatedir = os.path.join(pmandir, 'templates')
-    bpmodpath = os.path.join(projectdir, 'game/blenderpanda')
 
     print("Creating directories...")
 
     dirs = [
-        'assets',
+        config['build']['asset_dir'],
         'game',
-    ]
-
-    bpanda_mod_files = [
-        os.path.join(templatedir, '__init__.py'),
-        os.path.join(templatedir, 'bpbase.py'),
-    ]
-
-    pman_files = [
-        '__init__.py',
-        'rendermanager.py',
-        'toml.py',
-        'hooks.py',
-        'pman_build.py',
     ]
 
     dirs = [os.path.join(projectdir, i) for i in dirs]
@@ -256,46 +245,20 @@ def create_project(projectdir):
             print("\tCreating directory: {}".format(d))
             os.mkdir(d)
 
-    print("Creating main.py")
-    with open(os.path.join(templatedir, 'main.py')) as f:
-        main_data = f.read()
+    templatefiles = (
+        ('main.py', config['run']['main_file']),
+        ('requirements.txt', 'requirements.txt'),
+    )
 
-    mainpath = os.path.join(projectdir, 'game', 'main.py')
-    if os.path.exists(mainpath):
-        print("\tmain.py already exists at {}".format(mainpath))
-    else:
-        with open(mainpath, 'w') as f:
-            f.write(main_data)
-        print("\tmain.py created at {}".format(mainpath))
-
-    if os.path.exists(bpmodpath):
-        print("Updating blenderpanda module")
-        shutil.rmtree(bpmodpath)
-    else:
-        print("Creating blenderpanda module")
-    os.mkdir(bpmodpath)
-    for copy_file in bpanda_mod_files:
-        bname = os.path.basename(copy_file)
-        print("\tCopying over {}".format(bname))
-        cfsrc = os.path.join(pmandir, copy_file)
-        cfdst = os.path.join(projectdir, 'game', 'blenderpanda', bname)
-        print(cfsrc, cfdst)
-        if os.path.isdir(cfsrc):
-            shutil.copytree(cfsrc, cfdst)
+    for tmplfile in templatefiles:
+        src = os.path.join(templatedir, tmplfile[0])
+        dst = os.path.join(projectdir, tmplfile[1])
+        print("Creating {}".format(dst))
+        if os.path.exists(dst):
+            print("\t{} already exists, skipping".format(dst))
         else:
-            shutil.copy(cfsrc, cfdst)
-        print("\t\t{} created at {}".format(bname, cfdst))
-
-    print("Copying pman")
-    pmantarget = os.path.join(bpmodpath, 'pman')
-    if os.path.exists(pmantarget):
-        shutil.rmtree(pmantarget)
-    os.mkdir(pmantarget)
-    for copy_file in pman_files:
-        shutil.copy(
-            os.path.join(pmandir, copy_file),
-            os.path.join(pmantarget, copy_file)
-        )
+            shutil.copyfile(src, dst)
+            print("\t{} copied to {}".format(src, dst))
 
 
 def get_abs_path(config, path):
@@ -348,6 +311,36 @@ def build(config=None):
 
 def run(config=None):
     PMan(config=config).run()
+
+
+def create_render_manager(base, config=None):
+    if config is None:
+        try:
+            config = get_config()
+        except NoConfigError:
+            print("RenderManager: Could not find pman config, falling back to basic plugin")
+            config = None
+
+    renderplugin = config['general']['render_plugin'] if config else ''
+
+    if not renderplugin:
+        from .basicrendermanager import  BasicRenderManager
+        return BasicRenderManager(base)
+
+    rppath = get_abs_path(config, renderplugin)
+    maindir = os.path.dirname(get_abs_path(config, config['run']['main_file']))
+    rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
+    module_parts = rppath.split(os.sep)
+
+    modname = '.'.join(module_parts)
+    print(modname)
+    try:
+        mod = load_module(modname, config)
+    except ImportError:
+        print("RenderManager: Could not find module ({}), falling back to basic plugin".format(modname))
+        return BasicRenderManager(base)
+
+    return mod.get_plugin()(base)
 
 
 def converter_copy(_config, _user_config, srcdir, dstdir, assets):

@@ -4,12 +4,13 @@ import pytest
 import pman
 
 #pylint:disable=redefined-outer-name
+#pylint:disable=unused-argument
 
 
 @pytest.fixture
 def projectdir(tmpdir):
     pman.create_project(tmpdir.strpath)
-    return tmpdir.strpath
+    os.chdir(tmpdir.strpath)
 
 
 def test_conf(tmpdir):
@@ -19,16 +20,12 @@ def test_conf(tmpdir):
     pman.write_config(conf)
 
 
-def test_create_project(tmpdir):
-    pman.create_project(tmpdir.strpath)
+def test_create_project(projectdir):
+    pass
 
 
 def test_build(projectdir):
-    os.chdir(projectdir)
     pman.build()
 
-
-# Requires Panda3D to be setup
-#def test_run(projectdir):
-#    os.chdir(projectdir)
-#    pman.run()
+# def test_run(projectdir):
+#     pman.run()
