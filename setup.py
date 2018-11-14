@@ -29,7 +29,7 @@ setup(
     packages=['pman'],
     install_requires=['panda3d'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'pylint', 'pytest-pylint'],
+    tests_require=['pytest', 'pylint<=2.0', 'pytest-pylint'],
     entry_points={
         'console_scripts':[
             'pman=pman.cli:main',
