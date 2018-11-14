@@ -1,9 +1,17 @@
+from __future__ import print_function
+
 import sys
 import os
 
 #pylint:disable=import-error
 import bpy
 import addon_utils
+
+
+if 'FileExistsError' not in globals():
+    #pylint:disable=redefined-builtin
+    FileExistsError = IOError
+
 
 def main():
     # Make sure BlenderPanda addon is enabled

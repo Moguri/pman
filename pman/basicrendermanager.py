@@ -33,7 +33,7 @@ void main() {
 """
 
 
-class BasicRenderManager:
+class BasicRenderManager(object):
     def __init__(self, base):
         self.base = base
         self.base.render.set_shader_auto()
