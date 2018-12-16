@@ -26,7 +26,7 @@ setup(
     url='https://github.com/Moguri/pman',
     author='Mitchell Stokes',
     license='MIT',
-    packages=['pman'],
+    packages=['pman', 'pman.templates'],
     setup_requires=['pytest-runner'],
     tests_require=[
         'panda3d',
