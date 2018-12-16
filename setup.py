@@ -27,9 +27,9 @@ setup(
     author='Mitchell Stokes',
     license='MIT',
     packages=['pman'],
-    install_requires=['panda3d'],
     setup_requires=['pytest-runner'],
     tests_require=[
+        'panda3d',
         'pytest',
         'pylint==2.2.*;python_version>="3.0"',
         'pylint<2.0;python_version<"3.0"',
