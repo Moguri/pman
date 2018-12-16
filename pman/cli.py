@@ -1,4 +1,5 @@
 import argparse
+import subprocess
 
 
 import pman
@@ -14,6 +15,16 @@ def build(_):
 
 def run(_):
     pman.run()
+
+
+def test(_):
+    config = pman.get_config()
+    args = [
+        pman.get_python_program(),
+        'setup.py',
+        'test',
+    ]
+    subprocess.call(args, cwd=config['internal']['projectdir'])
 
 
 def main():
@@ -50,6 +61,12 @@ def main():
         help='Run project',
     )
     run_parser.set_defaults(func=run)
+
+    test_parser = subparsers.add_parser(
+        'test',
+        help='Run tests',
+    )
+    test_parser.set_defaults(func=test)
 
 
     args = parser.parse_args()
