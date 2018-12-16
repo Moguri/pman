@@ -27,6 +27,7 @@ setup(
     author='Mitchell Stokes',
     license='MIT',
     packages=['pman', 'pman.templates'],
+    include_package_data=True,
     setup_requires=['pytest-runner'],
     tests_require=[
         'panda3d',
