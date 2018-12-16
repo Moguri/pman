@@ -252,6 +252,7 @@ def create_project(projectdir='.'):
         ('setup.py', 'setup.py'),
         ('setup.cfg', 'setup.cfg'),
         ('pylintrc', '.pylintrc'),
+        ('test_imports.py', 'tests/test_imports.py'),
     )
 
     for tmplfile in templatefiles:
