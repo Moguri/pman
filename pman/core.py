@@ -234,6 +234,7 @@ def create_project(projectdir='.'):
     dirs = [
         config['build']['asset_dir'],
         'game',
+        'tests',
     ]
 
     dirs = [os.path.join(projectdir, i) for i in dirs]
@@ -248,6 +249,9 @@ def create_project(projectdir='.'):
     templatefiles = (
         ('main.py', config['run']['main_file']),
         ('requirements.txt', 'requirements.txt'),
+        ('setup.py', 'setup.py'),
+        ('setup.cfg', 'setup.cfg'),
+        ('pylintrc', '.pylintrc'),
     )
 
     for tmplfile in templatefiles:
