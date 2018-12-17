@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/Moguri/pman.svg?branch=master)](https://travis-ci.org/Moguri/pman)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/panda3d-pman.svg)
-[![Panda3D Versions](https://img.shields.io/badge/panda3d-1.9%2C%201.10-blue.svg)](http://www.panda3d.org/)
+[![](https://img.shields.io/pypi/pyversions/panda3d_pman.svg)](https://pypi.org/project/panda3d_pman/)
+[![Panda3D Versions](https://img.shields.io/badge/panda3d-1.9%2C%201.10-blue.svg)](https://www.panda3d.org/)
+[![](https://img.shields.io/github/license/Moguri/pman.svg)](https://choosealicense.com/licenses/mit/)
+
 
 # Panda3D Manager
 pman is a Python package to help bootstrap and manage [Panda3D](https://github.com/panda3d/panda3d) applications.
