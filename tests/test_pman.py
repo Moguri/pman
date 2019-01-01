@@ -14,13 +14,13 @@ def projectdir(tmpdir):
 
 
 def test_conf(tmpdir):
-    os.chdir(tmpdir.strpath)
     open('.pman', 'w').close()
     conf = pman.get_config()
     pman.write_config(conf)
 
 
 def test_create_project(projectdir):
+    # projectdir already creates a project
     pass
 
 
