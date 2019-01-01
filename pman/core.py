@@ -304,7 +304,7 @@ def get_python_program(config=None):
             return pyprog
 
     # We couldn't find a python program to run
-    raise CouldNotFindPythonError('Could not find a usable Python install')
+    raise CouldNotFindPythonError('Could not find a Python version with Panda3D installed')
 
 def load_module(modname, config=None):
     return PMan(config=config).load_module(modname)
