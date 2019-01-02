@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import subprocess
 
@@ -25,6 +27,21 @@ def test(_):
         'test',
     ]
     subprocess.call(args, cwd=config['internal']['projectdir'])
+
+
+def dist(args):
+    pman.get_python_program()
+
+    try:
+        import direct.dist.commands #pylint:disable=unused-import,unused-variable
+    except ImportError:
+        print('Setuptools-based distribution is not supported by this version of Panda3D')
+        return
+
+    platforms = args.platforms
+    if platforms is not None:
+        platforms = list(platforms)
+    pman.dist(build_installers=not args.skip_installers, platforms=platforms)
 
 
 def main():
@@ -67,6 +84,23 @@ def main():
         help='Run tests',
     )
     test_parser.set_defaults(func=test)
+
+    dist_parser = subparsers.add_parser(
+        'dist',
+        help='Create binary distributions and installers'
+    )
+    dist_parser.add_argument(
+        '--skip-installers',
+        action='store_true',
+        help='Do not build installers',
+    )
+    dist_parser.add_argument(
+        '-p', '--platforms',
+        action='store',
+        nargs='+',
+        help='Override list of platforms to build for',
+    )
+    dist_parser.set_defaults(func=dist)
 
 
     args = parser.parse_args()

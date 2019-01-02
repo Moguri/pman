@@ -311,6 +311,10 @@ def run(config=None):
     PMan(config=config).run()
 
 
+def dist(config=None, build_installers=True, platforms=None):
+    PMan(config=config).dist(build_installers, platforms)
+
+
 def create_render_manager(base, config=None):
     if config is None:
         try:
@@ -485,3 +489,22 @@ class PMan(object):
         args = [get_python_program(self.config), mainfile]
         #print("Args: {}".format(args))
         subprocess.Popen(args, cwd=self.config['internal']['projectdir'])
+
+    def dist(self, build_installers=True, platforms=None):
+        if is_frozen():
+            raise FrozenEnvironmentError()
+
+        args = [
+            get_python_program(self.config),
+            'setup.py',
+        ]
+
+        if build_installers:
+            args += ['bdist_apps']
+        else:
+            args += ['build_apps']
+
+        if platforms is not None:
+            args += ['-p', '{}'.format(','.join(platforms))]
+
+        subprocess.call(args, cwd=self.config['internal']['projectdir'])
