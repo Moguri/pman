@@ -12,6 +12,9 @@ def projectdir(tmpdir):
     pman.create_project(tmpdir.strpath)
     os.chdir(tmpdir.strpath)
 
+def test_load_module():
+    pman.load_module('pman.hooks')
+
 
 def test_conf(tmpdir):
     open('.pman', 'w').close()

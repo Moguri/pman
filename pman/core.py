@@ -1,11 +1,10 @@
 from __future__ import print_function
 
-import imp
+import importlib
 import fnmatch
 import os
 import shutil
 import subprocess
-import sys
 import time
 from collections import OrderedDict
 try:
@@ -373,10 +372,8 @@ class PMan(object):
     def _init_hooks(self, hooks_list):
         new_hooks = []
         for hook in hooks_list:
-            modparts = hook.split('.')
-            module = '.'.join(modparts[:-1])
-            func = modparts[-1]
-            mod = self.load_module(module)
+            modname, func = hook.rsplit('.', 1)
+            mod = self.load_module(modname)
             new_hooks.append(getattr(mod, func))
 
         return new_hooks
@@ -392,43 +389,7 @@ class PMan(object):
         return os.path.relpath(path, self.config['internal']['projectdir'])
 
     def load_module(self, modname):
-        mod = None
-        module_parts = modname.split('.')
-        maindir = os.path.dirname(self.get_abs_path(self.config['run']['main_file']))
-        pmandir = os.path.dirname(__file__) if not is_frozen() else None
-        fix_path = False
-
-        def _load_module(modname, modinfo):
-            mod = None
-            try:
-                mod = imp.load_module(modname, *modinfo)
-            finally:
-                if modinfo[0]:
-                    modinfo[0].close()
-
-            return mod
-
-        if is_frozen():
-            modinfo = imp.find_module(modname)
-            mod = _load_module(modname, modinfo)
-        else:
-            if maindir not in sys.path:
-                sys.path.append(maindir)
-                fix_path = True
-
-            mod = None
-            for modname in module_parts:
-                if modname == 'pman':
-                    modpath = [os.path.join(pmandir, '..')]
-                else:
-                    modpath = None if mod is None else mod.__path__
-                modinfo = imp.find_module(modname, modpath)
-                mod = _load_module(modname, modinfo)
-
-        if fix_path:
-            sys.path.remove(maindir)
-
-        return mod
+        return importlib.import_module(modname)
 
     def build(self):
         if is_frozen():
