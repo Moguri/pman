@@ -360,7 +360,10 @@ class PMan(object):
             self.config = get_config(config_startdir)
             self.user_config = get_user_config(config_startdir)
 
-        self.converters = self._init_hooks(self.config['build']['converter_hooks'])
+        if is_frozen():
+            self.converters = []
+        else:
+            self.converters = self._init_hooks(self.config['build']['converter_hooks'])
 
 
     def _init_hooks(self, hooks_list):
