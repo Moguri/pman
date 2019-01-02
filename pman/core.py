@@ -488,7 +488,7 @@ class PMan(object):
         print("Running main file: {}".format(mainfile))
         args = [get_python_program(self.config), mainfile]
         #print("Args: {}".format(args))
-        subprocess.Popen(args, cwd=self.config['internal']['projectdir'])
+        subprocess.call(args, cwd=self.config['internal']['projectdir'])
 
     def dist(self, build_installers=True, platforms=None):
         if is_frozen():
