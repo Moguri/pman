@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import imp
 import importlib
 import fnmatch
 import os
@@ -39,13 +40,6 @@ class BuildError(PManException):
 class FrozenEnvironmentError(PManException):
     def __init__(self):
         PManException.__init__(self, "Operation not supported in frozen applications")
-
-
-if '__file__' not in globals():
-    __IS_FROZEN = True
-    __file__ = ''
-else:
-    __IS_FROZEN = False
 
 
 _CONFIG_DEFAULTS = OrderedDict([
@@ -202,7 +196,7 @@ def write_user_config(user_config):
 
 
 def is_frozen():
-    return __IS_FROZEN
+    return imp.is_frozen(__name__)
 
 
 def create_project(projectdir='.'):
