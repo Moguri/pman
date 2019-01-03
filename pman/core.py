@@ -299,8 +299,10 @@ def get_python_program(config=None):
     # We couldn't find a python program to run
     raise CouldNotFindPythonError('Could not find a Python version with Panda3D installed')
 
-def load_module(modname, config=None):
-    return PMan(config=config).load_module(modname)
+
+def load_module(modname):
+    return importlib.import_module(modname)
+
 
 
 def build(config=None):
@@ -337,7 +339,7 @@ def create_render_manager(base, config=None):
     modname = '.'.join(module_parts)
     print(modname)
     try:
-        mod = load_module(modname, config)
+        mod = load_module(modname)
     except ImportError:
         print("RenderManager: Could not find module ({}), falling back to basic plugin".format(modname))
         return BasicRenderManager(base)
@@ -374,7 +376,7 @@ class PMan(object):
         new_hooks = []
         for hook in hooks_list:
             modname, func = hook.rsplit('.', 1)
-            mod = self.load_module(modname)
+            mod = load_module(modname)
             new_hooks.append(getattr(mod, func))
 
         return new_hooks
@@ -388,9 +390,6 @@ class PMan(object):
 
     def get_rel_path(self, path):
         return os.path.relpath(path, self.config['internal']['projectdir'])
-
-    def load_module(self, modname):
-        return importlib.import_module(modname)
 
     def build(self):
         if is_frozen():
