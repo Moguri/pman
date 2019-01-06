@@ -2,7 +2,27 @@ language: python
 sudo: required
 dist: xenial
 python:
-    - "2.7"
-    - "3.6"
-    - "3.7"
+  - '2.7'
+  - '3.6'
+  - '3.7'
 script: python setup.py test
+deploy:
+  - provider: pypi
+    skip_cleanup: true
+    skip_existing: true
+    on:
+      tags: true
+      repo: Moguri/pman
+    user: Moguri
+    password:
+      secure: oN/ErCGsJwrODCF41AZ9sdGOSVrPsny5pn/UgTLPSsg1KgqJkG0MULD0FSW4nMpLDrT1AlS1SPcs+QXM5Jobf0Oiqbu0DmAXaNznLylsRnC5JTL/0i1MDTmXY+V98zZ+RjqIkcl/smtPJeuZgIPQQ4FjDzkzHxPwouxr5hsbCbzhFkPQr4LltL+TrdTYJOspAfrvNck4r1Zqd4UOHYN0iH9JX2LiJWIUrCJp/ldqkMlsw1PTY8rtW+yZrPwidj/FGY2Bq02ySrzdVFFhFqLACdGTgvOceF2noNQtyjqIRROhXH1gWK64BWUYypTbu8k3JnGGdgwGY0Oa343IzZQa6bGnobl55foGMtMLXfX4SgqAuhGDxl477zXdpyAgnAtg+qppaNsGrUF+iahnSih6E8nAVKNEf4sA22cmzYmu4T6vcHRX1FuUUVdwLkyHXrJA1yKUI/n2DZl+lw25FMs2d6etMcneN2O8g/9ai/ENnDNUrfZfHFlA9FV2FTJz8enKhmN1yVeL/6BORHpSc9HQFR4ym93FHsBr5ZFYtwpZjjUHnzBmw4maU8nvkwKvRWfwwmz7tAY0XZMiEb3uWRcORrXLOh1eC+Nke6TrE/Sd3wPk241zpoIUeTT4jCrAkpFq9FLFiYbXMwVX5Qpw4XVV8z8LKe8qAvc7qMPx6MSbOxk=
+    distributions: sdist bdist_wheel
+  - provider: releases
+    on:
+        tags: true
+        repo: Moguri/pman
+    skip_cleanup: true
+    api_key:
+        secure: r80kvoY6STRU+KZwgR7ViueGwy1xy0Uwf5EtAGjK56Kfkz2oeEIykGqKOVxSVg1oP64wuemFr+WpnZA5TUDDZVLUR58zFAmYGmuiYlZ70JHZHNF+5oPX5n6a0ANTRsc+ZbothcgfNj+mB9g65eBsSNs7nFkO8F1bYJ9wcHDyKseL99JKZWbJrsqhpa8eAimgKPhizvj7b2dUbN9zKyVNmBkbl1LRfq3BsRthT/SekjlM+n4I5ZdYq+sOI8c2wuww4BWTJBteZeh6dy2xGKBaOx6JkLrKMj1t1UGaaMBKApNw8JSZ8z/x7RHk+BffFKQzkOdhluTC9PzRnW4AWn+nOOO4PzvfRPqoGianyRq488XQC8SMRa8aVUDsd9KchggfccLFUX+Pek8kKPYK/CL7HEBviWtJVoMb9d4FnwJwG3ef+xCKRq4bbsUMQEs+API2a8AQybuK+VIp2q/SHtKr/ODvuqmhdbFX4dXuUfoBvWCbk2yUyb+OzjtkGXN5VYKJsEmxyiE4mk/D/dYXFuJIE9UlhNHLxoOnWqjTHnNzK2LoWRbDM8VhxtQMLz10qb8O+npwp6x31hiaLXknJqaQKzVhX1FuCOtfRxh81Va63hE/YtoQQU3JWRzHV1KKubr9Zb4M7AUH2Al84PmhWAE1Ps3iTUTl1bIG4vH0oHCNnWg=
+    file_glob: true
+    file: dist/*
