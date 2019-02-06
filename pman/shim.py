@@ -19,5 +19,5 @@ def init(base):
     exportdir = p3d.Filename.from_os_specific(exportdir)
     p3d.get_model_path().prepend_directory(exportdir)
 
-    # Setup rendermanager
-    pman.create_render_manager(base, config)
+    # Setup renderer
+    pman.create_renderer(base, config)

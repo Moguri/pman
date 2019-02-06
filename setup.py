@@ -43,5 +43,8 @@ setup(
         'pman.converters': [
             'blend2bam = pman.hooks:converter_blend_bam',
         ],
+        'pman.renderers': [
+            'basic = pman.basicrenderer:BasicRenderer',
+        ],
     },
 )

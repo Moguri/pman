@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import imp
-import importlib
 import fnmatch
 import os
 import shutil
@@ -47,7 +46,7 @@ class FrozenEnvironmentError(PManException):
 _CONFIG_DEFAULTS = OrderedDict([
     ('general', OrderedDict([
         ('name', 'Game'),
-        ('render_plugin', ''),
+        ('renderer', 'basic'),
         ('material_mode', 'legacy'),
     ])),
     ('build', OrderedDict([
@@ -97,15 +96,18 @@ def _convert_conf_to_toml(configpath):
 
 def _update_conf(config):
     if 'general' in config:
-        if 'render_plugin' in config['general'] and '/' in config['general']['render_plugin']:
-            # Convert from path to module
-            renderplugin = config['general']['render_plugin']
-            rppath = get_abs_path(config, renderplugin)
-            maindir = os.path.dirname(get_abs_path(config, config['run']['main_file']))
-            rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
-            module_parts = rppath.split(os.sep)
-            modname = '.'.join(module_parts)
-            config['general']['render_plugin'] = modname
+        if 'render_plugin' in config['general']:
+            if '/' in config['general']['render_plugin']:
+                # Convert from path to module
+                renderplugin = config['general']['render_plugin']
+                rppath = get_abs_path(config, renderplugin)
+                maindir = os.path.dirname(get_abs_path(config, config['run']['main_file']))
+                rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
+                module_parts = rppath.split(os.sep)
+                modname = '.'.join(module_parts)
+                config['general']['render_plugin'] = modname
+            config['general']['renderer'] = config['general']['render_plugin']
+            del config['general']['render_plugin']
         if 'converter_hooks' in config['general']:
             config['general']['converters'] = [
                 'blend2bam' if i == 'pman.hooks.converter_blend_bam' else i
@@ -308,11 +310,6 @@ def get_python_program(config=None):
     raise CouldNotFindPythonError('Could not find a Python version with Panda3D installed')
 
 
-def load_module(modname):
-    return importlib.import_module(modname)
-
-
-
 def build(config=None):
     PMan(config=config).build()
 
@@ -325,34 +322,29 @@ def dist(config=None, build_installers=True, platforms=None):
     PMan(config=config).dist(build_installers, platforms)
 
 
-def create_render_manager(base, config=None):
+def create_renderer(base, config=None):
     if config is None:
         try:
             config = get_config()
         except NoConfigError:
-            print("RenderManager: Could not find pman config, falling back to basic plugin")
+            print("Could not find pman config, falling back to basic renderer")
             config = None
 
-    renderplugin = config['general']['render_plugin'] if config else ''
+    renderername = config['general']['renderer'] if config else 'basic'
 
-    if not renderplugin:
-        from .basicrendermanager import  BasicRenderManager
-        return BasicRenderManager(base)
+    if not renderername:
+        renderername = _CONFIG_DEFAULTS['general']['renderer']
 
-    rppath = get_abs_path(config, renderplugin)
-    maindir = os.path.dirname(get_abs_path(config, config['run']['main_file']))
-    rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
-    module_parts = rppath.split(os.sep)
+    for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
+        if entry_point.name == renderername:
+            renderer = entry_point.load()
+            break
+    else:
+        from .basicrenderer import BasicRenderer
+        print("Could not find renderer for {0}, falling back to basic renderer".format(renderername))
+        renderer = BasicRenderer
 
-    modname = '.'.join(module_parts)
-    print(modname)
-    try:
-        mod = load_module(modname)
-    except ImportError:
-        print("RenderManager: Could not find module ({}), falling back to basic plugin".format(modname))
-        return BasicRenderManager(base)
-
-    return mod.get_plugin()(base)
+    return renderer(base)
 
 
 def converter_copy(_config, _user_config, srcdir, dstdir, assets):
