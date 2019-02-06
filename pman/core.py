@@ -13,6 +13,8 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+import pkg_resources
+
 from . import toml
 
 
@@ -52,7 +54,7 @@ _CONFIG_DEFAULTS = OrderedDict([
         ('asset_dir', 'assets/'),
         ('export_dir', 'game/assets/'),
         ('ignore_patterns', ['*.blend1', '*.blend2']),
-        ('converter_hooks', ['pman.hooks.converter_blend_bam']),
+        ('converters', ['blend2bam']),
     ])),
     ('run', OrderedDict([
         ('main_file', 'game/main.py'),
@@ -104,6 +106,12 @@ def _update_conf(config):
             module_parts = rppath.split(os.sep)
             modname = '.'.join(module_parts)
             config['general']['render_plugin'] = modname
+        if 'converter_hooks' in config['general']:
+            config['general']['converters'] = [
+                'blend2bam' if i == 'pman.hooks.converter_blend_bam' else i
+                for i in config['general']['converter_hooks']
+            ]
+            del config['general']['convert_hooks']
 
 
 def _get_config(startdir, conf_name, defaults):
@@ -369,18 +377,11 @@ class PMan(object):
         if is_frozen():
             self.converters = []
         else:
-            self.converters = self._init_hooks(self.config['build']['converter_hooks'])
-
-
-    def _init_hooks(self, hooks_list):
-        new_hooks = []
-        for hook in hooks_list:
-            modname, func = hook.rsplit('.', 1)
-            mod = load_module(modname)
-            new_hooks.append(getattr(mod, func))
-
-        return new_hooks
-
+            self.converters = [
+                entry_point.load()
+                for entry_point in pkg_resources.iter_entry_points('pman.converters')
+                if entry_point.name in self.config['build']['converters']
+            ]
 
     def get_abs_path(self, path):
         return os.path.join(

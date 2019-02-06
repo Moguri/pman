@@ -37,8 +37,11 @@ setup(
         'pytest-pylint',
     ],
     entry_points={
-        'console_scripts':[
+        'console_scripts': [
             'pman=pman.cli:main',
+        ],
+        'pman.converters': [
+            'blend2bam = pman.hooks:converter_blend_bam',
         ],
     },
 )
