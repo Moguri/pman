@@ -45,6 +45,7 @@ setup(
         ],
         'pman.renderers': [
             'basic = pman.basicrenderer:BasicRenderer',
+            'none = pman.nullrenderer:NullRenderer',
         ],
     },
 )

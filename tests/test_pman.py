@@ -27,5 +27,12 @@ def test_create_project(projectdir):
 def test_build(projectdir):
     pman.build()
 
+
+def test_create_renderer(projectdir):
+    conf = pman.get_config()
+    conf['general']['renderer'] = 'none'
+    pman.create_renderer(None, conf)
+
+
 # def test_run(projectdir):
 #     pman.run()
