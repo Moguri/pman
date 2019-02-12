@@ -16,10 +16,10 @@ pman is a Python package to help bootstrap and manage [Panda3D](https://github.c
 
 ## Installation
 
-Use [pip](https://github.com/panda3d/panda3d) to install the panda3d_pman package:
+Use [pip](https://github.com/panda3d/panda3d) to install the `panda3d-pman` package:
 
 ```bash
-pip install panda3d_pman
+pip install panda3d-pman
 ```
 
 ## Usage

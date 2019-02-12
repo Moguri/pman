@@ -7,7 +7,7 @@ def readme():
 
 
 setup(
-    name='panda3d_pman',
+    name='panda3d-pman',
     version='0.3',
     description='A Python package to help bootstrap and manage Panda3D applications',
     long_description=readme(),
