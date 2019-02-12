@@ -14,19 +14,41 @@ class Converter(object):
 
 
 @Converter(['.blend'], {'.blend': '.bam'})
-def converter_blend_bam(_config, user_config, srcdir, dstdir, _assets):
-    use_last_path = user_config['blender']['use_last_path']
-    blender_path = user_config['blender']['last_path'] if use_last_path else 'blender'
+def converter_blend_bam(config, user_config, srcdir, dstdir, _assets):
+    files_to_convert = []
+    for root, _dirs, files in os.walk(srcdir):
+        for asset in files:
+            src = os.path.join(root, asset)
+            dst = src.replace(srcdir, dstdir).replace('.blend', '.bam')
+
+            if not asset.endswith('.blend'):
+                # Only convert blend files
+                continue
+
+            if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
+                # Don't convert up-to-date-files
+                continue
+
+            files_to_convert.append(os.path.abspath(src))
+
+    if files_to_convert is None:
+        return
+
     args = [
-        blender_path,
-        '-b',
-        '-P',
-        os.path.join(os.path.dirname(__file__), 'pman_build.py'),
-        '--',
-        srcdir,
-        dstdir,
+        'blend2bam',
+        '--srcdir', srcdir,
+        '--material-mode', config['general']['material_mode'],
+    ]
+    if user_config['blender']['use_last_path']:
+        blenderdir = os.path.dirname(user_config['blender']['last_path'])
+        args += [
+            '--blender-dir', blenderdir,
+        ]
+    args += files_to_convert
+    args += [
+        dstdir
     ]
 
-    #print("Calling blender: {}".format(' '.join(args)))
+    print("Calling blend2bam: {}".format(' '.join(args)))
 
     subprocess.call(args, env=os.environ.copy())

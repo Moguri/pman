@@ -28,6 +28,9 @@ setup(
     license='MIT',
     packages=['pman', 'pman.templates'],
     include_package_data=True,
+    install_requires=[
+        'panda3d-blend2bam >=0.2',
+    ],
     setup_requires=['pytest-runner'],
     tests_require=[
         'panda3d',
