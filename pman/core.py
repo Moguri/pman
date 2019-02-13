@@ -5,6 +5,7 @@ import fnmatch
 import os
 import shutil
 import subprocess
+import sys
 import time
 from collections import OrderedDict
 try:
@@ -69,6 +70,7 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
     ])),
     ('python', OrderedDict([
         ('path', ''),
+        ('in_venv', False),
     ])),
 ])
 
@@ -178,7 +180,7 @@ def config_exists(startdir=None):
 
 def get_user_config(startdir=None):
     try:
-        return _get_config(startdir, '.pman.user', _USER_CONFIG_DEFAULTS)
+        conf = _get_config(startdir, '.pman.user', _USER_CONFIG_DEFAULTS)
     except NoConfigError:
         # No user config, just create one
         config = get_config(startdir)
@@ -186,7 +188,24 @@ def get_user_config(startdir=None):
         print("Creating user config at {}".format(file_path))
         open(file_path, 'w').close()
 
-        return _get_config(startdir, '.pman.user', _USER_CONFIG_DEFAULTS)
+        conf = _get_config(startdir, '.pman.user', _USER_CONFIG_DEFAULTS)
+
+    confpy = conf['python']['path']
+    if not confpy:
+        # Try to find a Python program to default to
+        try:
+            pyprog = get_python_program()
+            pyloc = shutil.which(pyprog)
+            conf['python']['path'] = pyloc
+
+            activate_this_loc = os.path.join(os.path.dirname(pyloc), 'activate_this.py')
+            conf['python']['in_venv'] = os.path.exists(activate_this_loc)
+
+            write_user_config(conf)
+        except CouldNotFindPythonError:
+            pass
+
+    return conf
 
 
 def _write_config(config, conf_name):
@@ -308,6 +327,32 @@ def get_python_program(config=None):
 
     # We couldn't find a python program to run
     raise CouldNotFindPythonError('Could not find a Python version with Panda3D installed')
+
+
+def in_venv():
+    return (
+        hasattr(sys, 'real_prefix') or
+        (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+    )
+
+
+def run_program(config, args, use_venv=True, cwd=None):
+    user_config = get_user_config(config['internal']['projectdir'])
+    if use_venv and user_config['python']['in_venv']:
+        actv_this_loc = os.path.join(
+            os.path.dirname(user_config['python']['path']),
+            'activate_this.py'
+        )
+        args = [
+            'python',
+            os.path.join(os.path.dirname(__file__), 'venvwrapper.py'),
+            actv_this_loc,
+        ] + args
+    subprocess.call(args, cwd=cwd)
+
+def run_script(config, args, use_venv=True, cwd=None):
+    pyprog = get_python_program(config)
+    run_program(config, [pyprog] + args, use_venv=use_venv, cwd=cwd)
 
 
 def build(config=None):
@@ -478,16 +523,15 @@ class PMan(object):
 
         mainfile = self.get_abs_path(self.config['run']['main_file'])
         print("Running main file: {}".format(mainfile))
-        args = [get_python_program(self.config), mainfile]
+        args = [mainfile]
         #print("Args: {}".format(args))
-        subprocess.call(args, cwd=self.config['internal']['projectdir'])
+        run_script(self.config, args, cwd=self.config['internal']['projectdir'])
 
     def dist(self, build_installers=True, platforms=None):
         if is_frozen():
             raise FrozenEnvironmentError()
 
         args = [
-            get_python_program(self.config),
             'setup.py',
         ]
 
@@ -499,4 +543,4 @@ class PMan(object):
         if platforms is not None:
             args += ['-p', '{}'.format(','.join(platforms))]
 
-        subprocess.call(args, cwd=self.config['internal']['projectdir'])
+        run_script(self.config, args, cwd=self.config['internal']['projectdir'])
