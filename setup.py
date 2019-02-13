@@ -16,8 +16,6 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -35,8 +33,7 @@ setup(
     tests_require=[
         'panda3d',
         'pytest',
-        'pylint==2.2.*;python_version>="3.0"',
-        'pylint<2.0;python_version<"3.0"',
+        'pylint==2.2.*',
         'pytest-pylint',
     ],
     entry_points={
