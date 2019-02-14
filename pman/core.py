@@ -351,7 +351,11 @@ def run_program(config, args, use_venv=True, cwd=None):
     subprocess.call(args, cwd=cwd)
 
 def run_script(config, args, use_venv=True, cwd=None):
-    pyprog = get_python_program(config)
+    user_config = get_user_config(config['internal']['projectdir'])
+    if use_venv and user_config['python']['in_venv']:
+        pyprog = 'python'
+    else:
+        pyprog = get_python_program(config)
     run_program(config, [pyprog] + args, use_venv=use_venv, cwd=cwd)
 
 
