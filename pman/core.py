@@ -49,6 +49,7 @@ _CONFIG_DEFAULTS = OrderedDict([
         ('name', 'Game'),
         ('renderer', 'basic'),
         ('material_mode', 'legacy'),
+        ('physics_engine', 'builtin'),
     ])),
     ('build', OrderedDict([
         ('asset_dir', 'assets/'),

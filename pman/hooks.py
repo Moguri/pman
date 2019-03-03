@@ -38,6 +38,7 @@ def converter_blend_bam(config, user_config, srcdir, dstdir, _assets):
         'blend2bam',
         '--srcdir', srcdir,
         '--material-mode', config['general']['material_mode'],
+        '--physics-engine', config['general']['physics_engine'],
     ]
     if user_config['blender']['use_last_path']:
         blenderdir = os.path.dirname(user_config['blender']['last_path'])
