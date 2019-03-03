@@ -14,26 +14,7 @@ class Converter(object):
 
 
 @Converter(['.blend'], {'.blend': '.bam'})
-def converter_blend_bam(config, user_config, srcdir, dstdir, _assets):
-    files_to_convert = []
-    for root, _dirs, files in os.walk(srcdir):
-        for asset in files:
-            src = os.path.join(root, asset)
-            dst = src.replace(srcdir, dstdir).replace('.blend', '.bam')
-
-            if not asset.endswith('.blend'):
-                # Only convert blend files
-                continue
-
-            if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
-                # Don't convert up-to-date-files
-                continue
-
-            files_to_convert.append(os.path.abspath(src))
-
-    if files_to_convert is None:
-        return
-
+def converter_blend_bam(config, user_config, srcdir, dstdir, assets):
     args = [
         'blend2bam',
         '--srcdir', srcdir,
@@ -45,11 +26,26 @@ def converter_blend_bam(config, user_config, srcdir, dstdir, _assets):
         args += [
             '--blender-dir', blenderdir,
         ]
-    args += files_to_convert
+    args += assets
     args += [
         dstdir
     ]
 
-    print("Calling blend2bam: {}".format(' '.join(args)))
+    # print("Calling blend2bam: {}".format(' '.join(args)))
 
-    subprocess.call(args, env=os.environ.copy())
+    subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
+
+@Converter(['.egg', '.egg.pz'], {'.egg': '.bam', '.egg.pz': '.bam'})
+def converter_egg_bam(_config, _user_config, srcdir, dstdir, assets):
+    for asset in assets:
+        dst = asset.replace(srcdir, dstdir).replace('.egg.pz', '.bam').replace('.egg', '.bam')
+        args = [
+            'egg2bam',
+            '-o', dst,
+            '-pd', srcdir,
+            '-ps', 'rel',
+            asset,
+        ]
+
+        # print("Calling egg2bam: {}".format(' '.join(args)))
+        subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)

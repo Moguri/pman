@@ -42,6 +42,7 @@ setup(
         ],
         'pman.converters': [
             'blend2bam = pman.hooks:converter_blend_bam',
+            'egg2bam = pman.hooks:converter_egg_bam',
         ],
         'pman.renderers': [
             'basic = pman.basicrenderer:BasicRenderer',

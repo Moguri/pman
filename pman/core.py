@@ -55,7 +55,7 @@ _CONFIG_DEFAULTS = OrderedDict([
         ('asset_dir', 'assets/'),
         ('export_dir', 'game/assets/'),
         ('ignore_patterns', ['*.blend1', '*.blend2']),
-        ('converters', ['blend2bam']),
+        ('converters', ['blend2bam', 'egg2bam']),
     ])),
     ('run', OrderedDict([
         ('main_file', 'game/main.py'),
@@ -401,7 +401,7 @@ def converter_copy(_config, _user_config, srcdir, dstdir, assets):
     for asset in assets:
         src = asset
         dst = src.replace(srcdir, dstdir)
-        print('Copying non-blend file from "{}" to "{}"'.format(src, dst))
+        # print('Copying file from "{}" to "{}"'.format(src, dst))
         if not os.path.exists(os.path.dirname(dst)):
             os.makedirs(os.path.dirname(dst))
         shutil.copyfile(src, dst)
@@ -484,7 +484,7 @@ class PMan(object):
                     print('Skip building file {} that matched ignore pattern {}'.format(asset, ignore_pattern))
                     continue
 
-                ext = os.path.splitext(asset)[1]
+                ext = '.' + asset.split('.', 1)[1]
 
                 if ext in ext_dst_map:
                     dst = dst.replace(ext, ext_dst_map[ext])
