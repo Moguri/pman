@@ -470,10 +470,6 @@ class PMan(object):
             for ext in converter.supported_exts:
                 ext_converter_map[ext] = converter
 
-        import pprint
-        pprint.pprint(ext_converter_map)
-        pprint.pprint(ext_dst_map)
-
         for root, _dirs, files in os.walk(srcdir):
             for asset in files:
                 src = os.path.join(root, asset)
