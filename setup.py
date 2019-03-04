@@ -39,10 +39,11 @@ setup(
     entry_points={
         'console_scripts': [
             'pman=pman.cli:main',
+            'native2bam=pman.native2bam:main',
         ],
         'pman.converters': [
             'blend2bam = pman.hooks:converter_blend_bam',
-            'egg2bam = pman.hooks:converter_egg_bam',
+            'native2bam = pman.hooks:converter_native_bam',
         ],
         'pman.renderers': [
             'basic = pman.basicrenderer:BasicRenderer',

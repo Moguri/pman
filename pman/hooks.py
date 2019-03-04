@@ -41,17 +41,24 @@ def converter_blend_bam(config, user_config, srcdir, dstdir, assets):
 
     subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
 
-@Converter(['.egg', '.egg.pz'])
-def converter_egg_bam(_config, _user_config, srcdir, dstdir, assets):
+@Converter([
+    '.egg', '.egg.pz',
+    '.obj', '.mtl',
+    '.fbx', '.dae',
+    '.ply',
+])
+def converter_native_bam(_config, _user_config, srcdir, dstdir, assets):
+    processes = []
     for asset in assets:
         dst = asset.replace(srcdir, dstdir).replace('.egg.pz', '.bam').replace('.egg', '.bam')
         args = [
-            'egg2bam',
-            '-o', dst,
-            '-pd', srcdir,
-            '-ps', 'rel',
+            'native2bam',
             asset,
+            dst
         ]
 
-        # print("Calling egg2bam: {}".format(' '.join(args)))
-        subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
+        # print("Calling native2bam: {}".format(' '.join(args)))
+        processes.append(subprocess.Popen(args, env=os.environ.copy(), stdout=subprocess.DEVNULL))
+
+    for proc in processes:
+        proc.wait()

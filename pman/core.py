@@ -55,7 +55,7 @@ _CONFIG_DEFAULTS = OrderedDict([
         ('asset_dir', 'assets/'),
         ('export_dir', 'game/assets/'),
         ('ignore_patterns', ['*.blend1', '*.blend2']),
-        ('converters', ['blend2bam', 'egg2bam']),
+        ('converters', ['blend2bam', 'native2bam']),
     ])),
     ('run', OrderedDict([
         ('main_file', 'game/main.py'),
@@ -469,6 +469,10 @@ class PMan(object):
             ext_dst_map.update(converter.ext_dst_map)
             for ext in converter.supported_exts:
                 ext_converter_map[ext] = converter
+
+        import pprint
+        pprint.pprint(ext_converter_map)
+        pprint.pprint(ext_dst_map)
 
         for root, _dirs, files in os.walk(srcdir):
             for asset in files:
