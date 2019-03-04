@@ -5,7 +5,13 @@ import subprocess
 class Converter(object):
     def __init__(self, supported_exts, ext_dst_map=None):
         self.supported_exts = supported_exts
-        self.ext_dst_map = ext_dst_map if ext_dst_map is not None else {}
+        if ext_dst_map is None:
+            self.ext_dst_map = {
+                ext: '.bam'
+                for ext in supported_exts
+            }
+        else:
+            self.ext_dst_map = ext_dst_map
 
     def __call__(self, func):
         func.supported_exts = self.supported_exts
@@ -13,7 +19,7 @@ class Converter(object):
         return func
 
 
-@Converter(['.blend'], {'.blend': '.bam'})
+@Converter(['.blend'])
 def converter_blend_bam(config, user_config, srcdir, dstdir, assets):
     args = [
         'blend2bam',
@@ -35,7 +41,7 @@ def converter_blend_bam(config, user_config, srcdir, dstdir, assets):
 
     subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
 
-@Converter(['.egg', '.egg.pz'], {'.egg': '.bam', '.egg.pz': '.bam'})
+@Converter(['.egg', '.egg.pz'])
 def converter_egg_bam(_config, _user_config, srcdir, dstdir, assets):
     for asset in assets:
         dst = asset.replace(srcdir, dstdir).replace('.egg.pz', '.bam').replace('.egg', '.bam')
