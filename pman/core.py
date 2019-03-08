@@ -271,6 +271,7 @@ def create_project(projectdir='.'):
 
     templatefiles = (
         ('main.py', config['run']['main_file']),
+        ('settings.prc', 'game/settings.prc'),
         ('requirements.txt', 'requirements.txt'),
         ('setup.py', 'setup.py'),
         ('setup.cfg', 'setup.cfg'),
