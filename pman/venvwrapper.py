@@ -7,4 +7,4 @@ with open(ACTIVATE_PATH) as f:
     CODE = compile(f.read(), ACTIVATE_PATH, 'exec')
     exec(CODE, dict(__file__=ACTIVATE_PATH)) #pylint:disable=exec-used
 
-subprocess.check_call(sys.argv[2:])
+sys.exit(subprocess.call(sys.argv[2:]))
