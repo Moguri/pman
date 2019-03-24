@@ -49,6 +49,11 @@ def main():
     parser = argparse.ArgumentParser(
         description='Tool for building and managing Panda3D applications'
     )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {version}'.format(version=pman.__version__),
+    )
 
     subparsers = parser.add_subparsers(
         title='commands',

@@ -5,10 +5,14 @@ def readme():
     with open('README.md') as readme_file:
         return readme_file.read()
 
+__version__ = ''
+#pylint: disable=exec-used
+exec(open('pman/version.py').read())
+
 
 setup(
     name='panda3d-pman',
-    version='0.5',
+    version=__version__,
     description='A Python package to help bootstrap and manage Panda3D applications',
     long_description=readme(),
     long_description_content_type='text/markdown',
