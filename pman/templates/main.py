@@ -6,13 +6,9 @@ import panda3d
 import pman.shim
 
 
-if hasattr(sys, 'frozen'):
-    APP_ROOT_DIR = os.path.dirname(sys.executable)
-else:
-    APP_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-APP_ROOT_DIR = panda3d.core.Filename.from_os_specific(APP_ROOT_DIR)
-
-panda3d.core.load_prc_file(panda3d.core.Filename(APP_ROOT_DIR, 'settings.prc'))
+panda3d.core.load_prc_file(
+    panda3d.core.Filename.expand_from('$MAIN_DIR/settings.prc')
+)
 
 
 class GameApp(ShowBase):
