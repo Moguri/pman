@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import argparse
 import subprocess
+import sys
 
 
 import pman
@@ -51,7 +52,6 @@ def main():
 
     subparsers = parser.add_subparsers(
         title='commands',
-        required=True,
     )
 
     create_parser = subparsers.add_parser(
@@ -104,6 +104,11 @@ def main():
 
 
     args = parser.parse_args()
+    if not hasattr(args, 'func'):
+        print('A command must be provided\n')
+        parser.print_help()
+        sys.exit(1)
+
     args.func(args)
 
 
