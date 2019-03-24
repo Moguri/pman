@@ -18,5 +18,9 @@ class GameApp(ShowBase):
         self.accept('escape', sys.exit)
 
 
-APP = GameApp()
-APP.run()
+def main():
+    app = GameApp()
+    app.run()
+
+if __name__ == '__main__':
+    main()
