@@ -24,6 +24,8 @@ def main():
     src = p3d.Filename.from_os_specific(os.path.abspath(args.src))
     dst = p3d.Filename.from_os_specific(os.path.abspath(args.dst))
 
+    dst.make_dir()
+
 
     loader = p3d.Loader.get_global_ptr()
     options = p3d.LoaderOptions()
