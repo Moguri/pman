@@ -31,7 +31,7 @@ setup(
     packages=['pman', 'pman.templates'],
     include_package_data=True,
     install_requires=[
-        'panda3d-blend2bam >=0.4',
+        'panda3d-blend2bam >=0.5',
     ],
     setup_requires=['pytest-runner'],
     tests_require=[
