@@ -28,6 +28,15 @@ setup(
             'rename_paths': {
                 'game/': './',
             },
+            'include_modules': {
+                '*': [
+                    'pkg_resources._vendor.packaging',
+                    'pkg_resources._vendor.packaging.version',
+                    'pkg_resources._vendor.packaging.specifiers',
+                    'pkg_resources._vendor.packaging.utils',
+                    'pkg_resources._vendor.packaging.requirements',
+                ],
+            },
             'gui_apps': {
                 APP_NAME: CONFIG['run']['main_file'],
             },
