@@ -450,7 +450,8 @@ class PMan(object):
         dstdir = self.get_abs_path(self.config['build']['export_dir'])
 
         if not os.path.exists(srcdir):
-            raise BuildError("Could not find asset directory: {}".format(srcdir))
+            print("warning: could not find asset directory: {}".format(srcdir))
+            return
 
         if not os.path.exists(dstdir):
             print("Creating asset export directory at {}".format(dstdir))
