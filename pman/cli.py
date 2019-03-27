@@ -45,6 +45,10 @@ def dist(args):
     pman.dist(build_installers=not args.skip_installers, platforms=platforms)
 
 
+def clean(_):
+    pman.clean()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Tool for building and managing Panda3D applications'
@@ -106,6 +110,12 @@ def main():
         help='Override list of platforms to build for',
     )
     dist_parser.set_defaults(func=dist)
+
+    clean_parser = subparsers.add_parser(
+        'clean',
+        help='Remove built files',
+    )
+    clean_parser.set_defaults(func=clean)
 
 
     args = parser.parse_args()

@@ -373,6 +373,10 @@ def dist(config=None, build_installers=True, platforms=None):
     PMan(config=config).dist(build_installers, platforms)
 
 
+def clean(config=None):
+    PMan(config=config).clean()
+
+
 def create_renderer(base, config=None):
     if config is None:
         try:
@@ -551,3 +555,11 @@ class PMan(object):
             args += ['-p', '{}'.format(','.join(platforms))]
 
         run_script(self.config, args, cwd=self.config['internal']['projectdir'])
+
+    def clean(self):
+        if is_frozen():
+            raise FrozenEnvironmentError()
+
+        shutil.rmtree(self.get_abs_path(self.config['build']['export_dir']), ignore_errors=True)
+        shutil.rmtree(self.get_abs_path('build'), ignore_errors=True)
+        shutil.rmtree(self.get_abs_path('dist'), ignore_errors=True)
