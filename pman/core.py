@@ -47,7 +47,7 @@ class FrozenEnvironmentError(PManException):
 _CONFIG_DEFAULTS = OrderedDict([
     ('general', OrderedDict([
         ('name', 'Game'),
-        ('renderer', 'basic'),
+        ('renderer', 'none'),
         ('material_mode', 'legacy'),
         ('physics_engine', 'builtin'),
     ])),
@@ -382,10 +382,10 @@ def create_renderer(base, config=None):
         try:
             config = get_config()
         except NoConfigError:
-            print("Could not find pman config, falling back to basic renderer")
+            print("Could not find pman config, falling back to null renderer")
             config = None
 
-    renderername = config['general']['renderer'] if config else 'basic'
+    renderername = config['general']['renderer'] if config else 'null'
 
     if not renderername:
         renderername = _CONFIG_DEFAULTS['general']['renderer']
