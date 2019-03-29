@@ -45,6 +45,7 @@ In addition to the `create` command, `pman` has the following commands:
 * run - run the application by calling `python` with the main file
 * test - run tests (shortcut for `python setup.py test`)
 * dist - create distributable forms of Panda3D applications (requires Panda3D 1.10+)
+* clean - remove built files
 
 ## Configuration
 
