@@ -13,7 +13,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-import pkg_resources
 
 from . import toml
 
@@ -378,28 +377,20 @@ def clean(config=None):
 
 
 def create_renderer(base, config=None):
-    if config is None:
-        try:
-            config = get_config()
-        except NoConfigError:
-            print("Could not find pman config, falling back to null renderer")
-            config = None
+    return PMan(config=config).create_renderer(base)
 
-    renderername = config['general']['renderer'] if config else 'null'
 
-    if not renderername:
-        renderername = _CONFIG_DEFAULTS['general']['renderer']
+_RENDER_STUB = """
+import functools
+def get_renderer():
+    modname = '{}'
+    attrs = {}
+    module =  __import__(modname, fromlist=['__name__'], level=0)
+    return functools.reduce(getattr, attrs, module)
+"""
 
-    for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
-        if entry_point.name == renderername:
-            renderer = entry_point.load()
-            break
-    else:
-        from .basicrenderer import BasicRenderer
-        print("Could not find renderer for {0}, falling back to basic renderer".format(renderername))
-        renderer = BasicRenderer
 
-    return renderer(base)
+RENDER_STUB_NAME = 'pman_renderer.py'
 
 
 def converter_copy(_config, _user_config, srcdir, dstdir, assets):
@@ -424,6 +415,7 @@ class PMan(object):
         if is_frozen():
             self.converters = []
         else:
+            import pkg_resources
             self.converters = [
                 entry_point.load()
                 for entry_point in pkg_resources.iter_entry_points('pman.converters')
@@ -439,7 +431,14 @@ class PMan(object):
     def get_rel_path(self, path):
         return os.path.relpath(path, self.config['internal']['projectdir'])
 
+    def create_renderer(self, base):
+        if not is_frozen():
+            sys.path.append(self.get_abs_path(self.config['build']['export_dir']))
+        import pman_renderer #pylint: disable=import-error
+        return pman_renderer.get_renderer()(base)
+
     def build(self):
+        import pkg_resources
         if is_frozen():
             raise FrozenEnvironmentError()
 
@@ -519,6 +518,25 @@ class PMan(object):
         # Now run hooks that non-converted assets are in place (copied)
         for convert_hook in convert_hooks:
             convert_hook[0](self.config, self.user_config, srcdir, dstdir, convert_hook[1])
+
+        # Write out stub importer so we do not need pkg_resources at runtime
+        renderername = self.config['general']['renderer']
+
+        if not renderername:
+            renderername = _CONFIG_DEFAULTS['general']['renderer']
+        for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
+            if entry_point.name == renderername:
+                renderer_entry_point = entry_point
+                break
+        else:
+            raise BuildError('Could not find renderer for {0}'.format(renderername))
+        renderer_stub_path = os.path.join(dstdir, RENDER_STUB_NAME)
+        print('Writing renderer stub to {}'.format(renderer_stub_path))
+        with open(renderer_stub_path, 'w') as renderer_stub_file:
+            renderer_stub_file.write(_RENDER_STUB.format(
+                renderer_entry_point.module_name,
+                repr(renderer_entry_point.attrs)
+            ))
 
 
         if hasattr(time, 'perf_counter'):
