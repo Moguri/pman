@@ -12,6 +12,11 @@ def create(args):
     pman.create_project(args.dirname)
 
 
+def update(_):
+    config = pman.get_config()
+    pman.create_project(config['internal']['projectdir'])
+
+
 def build(_):
     pman.build()
 
@@ -75,6 +80,12 @@ def main():
         help='Directory to create the project in (will be created if it does not exist)',
     )
     create_parser.set_defaults(func=create)
+
+    update_parser = subparsers.add_parser(
+        'update',
+        help='Re-run project creation logic on the project directory'
+    )
+    update_parser.set_defaults(func=update)
 
     build_parser = subparsers.add_parser(
         'build',

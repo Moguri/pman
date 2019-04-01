@@ -40,6 +40,7 @@ pman create my_awesome_project
 
 In addition to the `create` command, `pman` has the following commands:
 
+* update - re-run project creation logic on the project directory
 * help - display usage information
 * build - convert all files in the assets directory and place them in the export directory
 * run - run the application by calling `python` with the main file
