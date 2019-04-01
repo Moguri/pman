@@ -9,12 +9,12 @@ import pman
 
 
 def create(args):
-    pman.create_project(args.dirname)
+    pman.create_project(args.dirname, args.extras)
 
 
-def update(_):
+def update(args):
     config = pman.get_config()
-    pman.create_project(config['internal']['projectdir'])
+    pman.create_project(config['internal']['projectdir'], args.extras)
 
 
 def build(_):
@@ -79,11 +79,23 @@ def main():
         default='.',
         help='Directory to create the project in (will be created if it does not exist)',
     )
+    create_parser.add_argument(
+        '--extras',
+        action='store',
+        nargs='+',
+        help='Extra creation hooks to run',
+    )
     create_parser.set_defaults(func=create)
 
     update_parser = subparsers.add_parser(
         'update',
         help='Re-run project creation logic on the project directory'
+    )
+    update_parser.add_argument(
+        '--extras',
+        action='store',
+        nargs='+',
+        help='Extra creation hooks to run',
     )
     update_parser.set_defaults(func=update)
 

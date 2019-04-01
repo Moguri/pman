@@ -229,7 +229,7 @@ def is_frozen():
     return imp.is_frozen(__name__)
 
 
-def create_project(projectdir='.'):
+def create_project(projectdir='.', extras=None):
     if is_frozen():
         raise FrozenEnvironmentError()
 
@@ -248,6 +248,7 @@ def create_project(projectdir='.'):
 
     config = get_config(projectdir)
     write_config(config)
+    user_config = get_user_config(projectdir)
 
     creationutils.create_dirs(projectdir, (
         config['build']['asset_dir'],
@@ -266,6 +267,18 @@ def create_project(projectdir='.'):
         ('pylintrc', '.pylintrc'),
         ('test_imports.py', 'tests/test_imports.py'),
     ))
+
+    if extras:
+        import pkg_resources
+        entrypoints = {
+            entrypoint.name: entrypoint.load()
+            for entrypoint in pkg_resources.iter_entry_points('pman.creation_extras')
+        }
+        for extra in extras:
+            if extra not in entrypoints:
+                print('Could not find creation extra: {}'.format(extra))
+                continue
+            entrypoints[extra](projectdir, config, user_config)
 
 
 
