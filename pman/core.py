@@ -15,6 +15,7 @@ except ImportError:
 
 
 from . import toml
+from . import creationutils
 
 
 if 'FileNotFoundError' not in globals():
@@ -248,27 +249,15 @@ def create_project(projectdir='.'):
     config = get_config(projectdir)
     write_config(config)
 
-    pmandir = os.path.dirname(__file__)
-    templatedir = os.path.join(pmandir, 'templates')
-
-    print("Creating directories...")
-
-    dirs = [
+    creationutils.create_dirs(projectdir, (
         config['build']['asset_dir'],
         'game',
         'tests',
-    ]
+    ))
 
-    dirs = [os.path.join(projectdir, i) for i in dirs]
 
-    for d in dirs:
-        if os.path.exists(d):
-            print("\tSkipping existing directory: {}".format(d))
-        else:
-            print("\tCreating directory: {}".format(d))
-            os.mkdir(d)
-
-    templatefiles = (
+    templatedir = creationutils.get_template_dir()
+    creationutils.copy_template_files(projectdir, templatedir, (
         ('main.py', config['run']['main_file']),
         ('settings.prc', 'game/settings.prc'),
         ('requirements.txt', 'requirements.txt'),
@@ -276,17 +265,8 @@ def create_project(projectdir='.'):
         ('setup.cfg', 'setup.cfg'),
         ('pylintrc', '.pylintrc'),
         ('test_imports.py', 'tests/test_imports.py'),
-    )
+    ))
 
-    for tmplfile in templatefiles:
-        src = os.path.join(templatedir, tmplfile[0])
-        dst = os.path.join(projectdir, tmplfile[1])
-        print("Creating {}".format(dst))
-        if os.path.exists(dst):
-            print("\t{} already exists, skipping".format(dst))
-        else:
-            shutil.copyfile(src, dst)
-            print("\t{} copied to {}".format(src, dst))
 
 
 def get_abs_path(config, path):
