@@ -53,5 +53,8 @@ setup(
             'basic = pman.basicrenderer:BasicRenderer',
             'none = pman.nullrenderer:NullRenderer',
         ],
+        'pman.creation_extras': [
+            'git = pman.hooks:create_git',
+        ],
     },
 )
