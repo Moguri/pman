@@ -356,7 +356,12 @@ def clean(config=None):
 
 
 def create_renderer(base, config=None):
-    return PMan(config=config).create_renderer(base)
+    if not is_frozen():
+        if config is None:
+            config = get_config()
+        sys.path.append(self.get_abs_path(self.config['build']['export_dir']))
+    import pman_renderer #pylint: disable=import-error
+    return pman_renderer.get_renderer()(base)
 
 
 _RENDER_STUB = """
@@ -409,12 +414,6 @@ class PMan(object):
 
     def get_rel_path(self, path):
         return os.path.relpath(path, self.config['internal']['projectdir'])
-
-    def create_renderer(self, base):
-        if not is_frozen():
-            sys.path.append(self.get_abs_path(self.config['build']['export_dir']))
-        import pman_renderer #pylint: disable=import-error
-        return pman_renderer.get_renderer()(base)
 
     def build(self):
         import pkg_resources
