@@ -23,7 +23,6 @@ setup(
         'build_apps': {
             'include_patterns': [
                 'game/**',
-                '.pman',
             ],
             'exclude_patterns': [
                 '**/*.py',
