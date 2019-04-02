@@ -21,10 +21,14 @@ setup(
     },
     options={
         'build_apps': {
-            'include_patterns': {
+            'include_patterns': [
                 'game/**',
                 '.pman',
-            },
+            ],
+            'exclude_patterns': [
+                '**/*.py',
+                '__py_cache__/**',
+            ],
             'rename_paths': {
                 'game/': './',
             },
