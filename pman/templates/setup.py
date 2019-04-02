@@ -24,14 +24,13 @@ setup(
             'include_patterns': [
                 CONFIG['build']['export_dir']+'/**',
                 'settings.prc',
-                '.pman',
             ],
             'exclude_patterns': [
                 '**/*.py',
                 '__py_cache__/**',
             ],
             'rename_paths': {
-                CONFIG['build']['export_dir']: CONFIG['build']['asset_dir'],
+                CONFIG['build']['export_dir']: 'assets/',
             },
             'gui_apps': {
                 APP_NAME: CONFIG['run']['main_file'],
