@@ -31,8 +31,10 @@ setup(
     packages=['pman', 'pman.templates'],
     include_package_data=True,
     install_requires=[
-        'panda3d-blend2bam >=0.5',
     ],
+    extras_require={
+        'blend2bam': ['panda3d-blend2bam >=0.5.1'],
+    },
     setup_requires=['pytest-runner'],
     tests_require=[
         'panda3d',
@@ -46,7 +48,7 @@ setup(
             'native2bam=pman.native2bam:main',
         ],
         'pman.converters': [
-            'blend2bam = pman.hooks:converter_blend_bam',
+            'blend2bam = pman.hooks:converter_blend_bam [blend2bam]',
             'native2bam = pman.hooks:converter_native_bam',
         ],
         'pman.renderers': [
@@ -55,6 +57,7 @@ setup(
         ],
         'pman.creation_extras': [
             'git = pman.hooks:create_git',
+            'blender = pman.hooks:create_blender',
         ],
     },
 )

@@ -54,8 +54,8 @@ _CONFIG_DEFAULTS = OrderedDict([
     ('build', OrderedDict([
         ('asset_dir', 'assets/'),
         ('export_dir', 'game/assets/'),
-        ('ignore_patterns', ['*.blend1', '*.blend2']),
-        ('converters', ['blend2bam', 'native2bam']),
+        ('ignore_patterns', []),
+        ('converters', ['native2bam']),
     ])),
     ('run', OrderedDict([
         ('main_file', 'game/main.py'),
@@ -65,10 +65,6 @@ _CONFIG_DEFAULTS = OrderedDict([
 ])
 
 _USER_CONFIG_DEFAULTS = OrderedDict([
-    ('blender', OrderedDict([
-        ('last_path', 'blender'),
-        ('use_last_path', True),
-    ])),
     ('python', OrderedDict([
         ('path', ''),
         ('in_venv', False),

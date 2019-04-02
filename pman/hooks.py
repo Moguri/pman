@@ -1,7 +1,9 @@
+import collections
 import os
 import subprocess
 
 from . import creationutils
+from . import core
 
 
 class Converter(object):
@@ -94,3 +96,35 @@ def create_git(projectdir, config, _user_config):
     if add_export_dir:
         with open(gitignorepath, 'a') as gitignorefile:
             gitignorefile.write(config['build']['export_dir'])
+
+def create_blender(projectdir, config, user_config):
+    # Update config
+    ignore_patterns = ['*.blend1', '*.blend2']
+    for pattern in ignore_patterns:
+        if pattern not in config['build']['ignore_patterns']:
+            config['build']['ignore_patterns'].append(pattern)
+
+    if 'blend2bam' not in config['build']['converters']:
+        config['build']['converters'].append('blend2bam')
+
+    if 'blender' not in user_config:
+        user_config['blender'] = collections.OrderedDict([
+            ('last_path', 'blender'),
+            ('use_last_path', True),
+        ])
+
+
+    core.write_config(config)
+    core.write_user_config(user_config)
+
+    # Update requirements.txt
+    add_blend2bam_req = True
+    reqpath = os.path.join(projectdir, 'requirements.txt')
+    with open(reqpath, 'r') as reqfile:
+        for line in reqfile.readlines():
+            if line.startswith('panda3d-blend2bam'):
+                add_blend2bam_req = False
+
+    if add_blend2bam_req:
+        with open(reqpath, 'a') as reqfile:
+            reqfile.write('panda3d-blend2bam')
