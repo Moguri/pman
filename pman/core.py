@@ -238,6 +238,7 @@ def create_project(projectdir='.', extras=None):
     else:
         print("Creating new project in {}".format(projectdir))
 
+    if not os.path.exists(confpath):
         # Touch config file to make sure it is present
         with open(confpath, 'a') as _:
             pass
