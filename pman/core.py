@@ -359,7 +359,7 @@ def create_renderer(base, config=None):
     if not is_frozen():
         if config is None:
             config = get_config()
-        sys.path.append(self.get_abs_path(self.config['build']['export_dir']))
+        sys.path.append(get_abs_path(config, config['build']['export_dir']))
     import pman_renderer #pylint: disable=import-error
     return pman_renderer.get_renderer()(base)
 
