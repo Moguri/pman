@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import imp
 import fnmatch
 import os
@@ -8,19 +6,11 @@ import subprocess
 import sys
 import time
 from collections import OrderedDict
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+import configparser
 
 
 from . import toml
 from . import creationutils
-
-
-if 'FileNotFoundError' not in globals():
-    #pylint:disable=redefined-builtin
-    FileNotFoundError = IOError
 
 
 class PManException(Exception):
@@ -41,7 +31,7 @@ class BuildError(PManException):
 
 class FrozenEnvironmentError(PManException):
     def __init__(self):
-        PManException.__init__(self, "Operation not supported in frozen applications")
+        super().__init__("Operation not supported in frozen applications")
 
 
 _CONFIG_DEFAULTS = OrderedDict([
