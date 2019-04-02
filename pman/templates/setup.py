@@ -22,14 +22,16 @@ setup(
     options={
         'build_apps': {
             'include_patterns': [
-                'game/**',
+                CONFIG['build']['export_dir']+'/**',
+                'settings.prc',
+                '.pman',
             ],
             'exclude_patterns': [
                 '**/*.py',
                 '__py_cache__/**',
             ],
             'rename_paths': {
-                'game/': './',
+                CONFIG['build']['export_dir']: CONFIG['build']['asset_dir'],
             },
             'gui_apps': {
                 APP_NAME: CONFIG['run']['main_file'],

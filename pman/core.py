@@ -53,12 +53,12 @@ _CONFIG_DEFAULTS = OrderedDict([
     ])),
     ('build', OrderedDict([
         ('asset_dir', 'assets/'),
-        ('export_dir', 'game/assets/'),
+        ('export_dir', '.built_assets/'),
         ('ignore_patterns', []),
         ('converters', ['native2bam']),
     ])),
     ('run', OrderedDict([
-        ('main_file', 'game/main.py'),
+        ('main_file', 'main.py'),
         ('auto_build', True),
         ('auto_save', True),
     ])),
@@ -249,7 +249,6 @@ def create_project(projectdir='.', extras=None):
 
     creationutils.create_dirs(projectdir, (
         config['build']['asset_dir'],
-        'game',
         'tests',
     ))
 
@@ -257,7 +256,7 @@ def create_project(projectdir='.', extras=None):
     templatedir = creationutils.get_template_dir()
     creationutils.copy_template_files(projectdir, templatedir, (
         ('main.py', config['run']['main_file']),
-        ('settings.prc', 'game/settings.prc'),
+        ('settings.prc', 'settings.prc'),
         ('requirements.txt', 'requirements.txt'),
         ('setup.py', 'setup.py'),
         ('setup.cfg', 'setup.cfg'),
