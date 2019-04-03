@@ -1,4 +1,3 @@
-import os
 import sys
 
 from direct.showbase.ShowBase import ShowBase
