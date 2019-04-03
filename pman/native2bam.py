@@ -12,14 +12,17 @@ bam-texture-mode unchanged
 p3d.load_prc_file_data('', CONFIG_DATA)
 
 
-def make_texpath_relative(node, srcdir):
+def make_texpath_relative(node, srcdir, converted_textures):
     geomnode = node.node()
     for idx, renderstate in enumerate(geomnode.get_geom_states()):
         texattrib = renderstate.get_attrib(p3d.TextureAttrib)
         if texattrib:
             for texstage in texattrib.get_on_stages():
                 texture = texattrib.get_on_texture(texstage)
+                if texture in converted_textures:
+                    continue
                 texture.filename = os.path.relpath(texture.filename, srcdir)
+                converted_textures.add(texture)
             renderstate = renderstate.set_attrib(texattrib)
         geomnode.set_geom_state(idx, renderstate)
 
@@ -47,8 +50,9 @@ def main():
     scene = p3d.NodePath(loader.load_sync(src, options))
 
     # Update texture paths
+    converted_textures = set()
     for node in scene.find_all_matches('**/+GeomNode'):
-        make_texpath_relative(node, src.get_dirname())
+        make_texpath_relative(node, src.get_dirname(), converted_textures)
 
     scene.write_bam_file(dst)
 
