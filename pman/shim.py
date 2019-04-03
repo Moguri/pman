@@ -4,19 +4,18 @@ from . import core as pman
 
 
 def init(base):
-    if pman.is_frozen():
-        config = None
-        # Add fix asset directory to model path
-        p3d.load_prc_file_data('pman', 'model-path $MAIN_DIR/assets')
-    else:
+    assetdir_rel = p3d.Filename('assets')
+    config = None
+
+    if not pman.is_frozen():
         config = pman.get_config()
         if config['run']['auto_build']:
             pman.build(config)
-        exportdir = pman.get_abs_path(config, config['build']['export_dir'])
+        assetdir_rel = p3d.Filename.from_os_specific(config['build']['export_dir'])
 
-        # Add export directory to model path
-        exportdir = p3d.Filename.from_os_specific(exportdir)
-        p3d.get_model_path().prepend_directory(exportdir)
+    # Add assets directory to model path
+    assetdir = p3d.Filename(p3d.Filename.expand_from('$MAIN_DIR'), assetdir_rel)
+    p3d.get_model_path().prepend_directory(assetdir)
 
     # Setup renderer
     pman.create_renderer(base, config)
