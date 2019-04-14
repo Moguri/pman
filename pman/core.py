@@ -62,27 +62,6 @@ _USER_CONFIG_DEFAULTS = OrderedDict([
 ])
 
 
-def _convert_conf_to_toml(configpath):
-    config = configparser.ConfigParser()
-    config.read(configpath)
-
-    confdict = {
-        s: dict(config.items(s))
-        for s in config.sections()
-    }
-
-    if 'build' in confdict:
-        confdict['build']['ignore_patterns'] = [
-            i.strip() for i in confdict['build']['ignore_patterns'].split(',')
-        ]
-    if 'run' in confdict:
-        confdict['run']['auto_build'] = config.getboolean('run', 'auto_build')
-        confdict['run']['auto_save'] = config.getboolean('run', 'auto_save')
-    if 'blender' in confdict:
-        confdict['blender']['use_last_path'] = config.getboolean('blender', 'use_last_path')
-    return confdict
-
-
 def _update_conf(config):
     if 'general' in config:
         if 'render_plugin' in config['general']:
@@ -120,18 +99,7 @@ def _get_config(startdir, conf_name, defaults):
         if cdir.strip() and conf_name in os.listdir(cdir):
             configpath = os.path.join(cdir, conf_name)
 
-            with open(configpath) as f:
-                confdata = f.read()
-                istoml = (
-                    '"' in confdata or
-                    "'" in confdata or
-                    confdata == ''
-                )
-
-            if istoml:
-                confdict = toml.load(configpath)
-            else:
-                confdict = _convert_conf_to_toml(configpath)
+            confdict = toml.load(configpath)
             confdict = {
                 k: dict(defaults.get(k, {}), **confdict.get(k, {}))
                 for k in set(defaults.keys()) | set(confdict.keys())
