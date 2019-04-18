@@ -6,7 +6,6 @@ import subprocess
 import sys
 import time
 from collections import OrderedDict
-import configparser
 
 
 from . import toml
