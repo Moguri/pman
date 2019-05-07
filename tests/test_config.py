@@ -13,6 +13,13 @@ def test_conf_read_write(tmpdir):
     pman.write_config(conf)
 
 
+def test_conf_contains(projectdir):
+    config = pman.get_config()
+
+    assert 'general' in config
+    assert 'foo' not in config
+
+
 def test_conf_override(projectdir):
     config_defaults = ConfigDict.CONFIG_DEFAULTS
 

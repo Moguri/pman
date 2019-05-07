@@ -63,6 +63,13 @@ class ConfigDict:
     def __setitem__(self, key, value):
         self.layers[key] = value
 
+    def __contains__(self, item):
+        for layer in self.layers.values():
+            if item in layer:
+                return True
+
+        return False
+
     def _update_conf(self, config):
         '''Handle updating old configs or fields that change on load'''
 
