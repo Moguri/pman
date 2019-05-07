@@ -242,16 +242,6 @@ class PMan(object):
         if self.config is None:
             self.config = get_config(config_startdir)
 
-        if is_frozen():
-            self.converters = []
-        else:
-            import pkg_resources
-            self.converters = [
-                entry_point.load()
-                for entry_point in pkg_resources.iter_entry_points('pman.converters')
-                if entry_point.name in self.config['build']['converters']
-            ]
-
     def get_abs_path(self, path):
         return os.path.join(
             self.config['internal']['projectdir'],
@@ -262,9 +252,15 @@ class PMan(object):
         return os.path.relpath(path, self.config['internal']['projectdir'])
 
     def build(self):
-        import pkg_resources
         if is_frozen():
             raise FrozenEnvironmentError()
+
+        import pkg_resources
+        converters = [
+            entry_point.load()
+            for entry_point in pkg_resources.iter_entry_points('pman.converters')
+            if entry_point.name in self.config['build']['converters']
+        ]
 
         if hasattr(time, 'perf_counter'):
             #pylint:disable=no-member
@@ -294,7 +290,7 @@ class PMan(object):
         ext_asset_map = {}
         ext_dst_map = {}
         ext_converter_map = {}
-        for converter in self.converters:
+        for converter in converters:
             ext_dst_map.update(converter.ext_dst_map)
             for ext in converter.supported_exts:
                 ext_converter_map[ext] = converter
