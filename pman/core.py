@@ -66,6 +66,15 @@ def write_user_config(user_config):
     write_config(user_config)
 
 
+def ensure_config(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'config' not in kwargs or kwargs['config'] is None:
+            kwargs['config'] = get_config()
+        return func(*args, **kwargs)
+    return wrapper
+
+
 def is_frozen():
     return imp.is_frozen(__name__)
 
@@ -199,22 +208,6 @@ def run_script(config, args, use_venv=True, cwd=None):
     run_program(config, [pyprog] + args, use_venv=use_venv, cwd=cwd)
 
 
-def build(config=None):
-    PMan(config=config).build()
-
-
-def run(config=None):
-    PMan(config=config).run()
-
-
-def dist(config=None, build_installers=True, platforms=None):
-    PMan(config=config).dist(build_installers, platforms)
-
-
-def clean(config=None):
-    PMan(config=config).clean()
-
-
 def create_renderer(base, config=None):
     if not is_frozen():
         if config is None:
@@ -247,143 +240,144 @@ def converter_copy(_config, srcdir, dstdir, assets):
         shutil.copyfile(src, dst)
 
 
-class PMan(object):
-    def __init__(self, config=None, config_startdir=None):
-        self.config = config
-        if self.config is None:
-            self.config = get_config(config_startdir)
+@ensure_config
+@disallow_frozen
+def build(config=None):
+    import pkg_resources
+    converters = [
+        entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points('pman.converters')
+        if entry_point.name in config['build']['converters']
+    ]
 
-    @disallow_frozen
-    def build(self):
-        import pkg_resources
-        converters = [
-            entry_point.load()
-            for entry_point in pkg_resources.iter_entry_points('pman.converters')
-            if entry_point.name in self.config['build']['converters']
-        ]
+    stime = time.perf_counter()
+    print("Starting build")
 
-        stime = time.perf_counter()
-        print("Starting build")
+    srcdir = get_abs_path(config, config['build']['asset_dir'])
+    dstdir = get_abs_path(config, config['build']['export_dir'])
 
-        srcdir = get_abs_path(self.config, self.config['build']['asset_dir'])
-        dstdir = get_abs_path(self.config, self.config['build']['export_dir'])
+    if not os.path.exists(srcdir):
+        print("warning: could not find asset directory: {}".format(srcdir))
+        return
 
-        if not os.path.exists(srcdir):
-            print("warning: could not find asset directory: {}".format(srcdir))
-            return
+    if not os.path.exists(dstdir):
+        print("Creating asset export directory at {}".format(dstdir))
+        os.makedirs(dstdir)
 
-        if not os.path.exists(dstdir):
-            print("Creating asset export directory at {}".format(dstdir))
-            os.makedirs(dstdir)
+    print("Read assets from: {}".format(srcdir))
+    print("Export them to: {}".format(dstdir))
 
-        print("Read assets from: {}".format(srcdir))
-        print("Export them to: {}".format(dstdir))
+    ignore_patterns = config['build']['ignore_patterns']
+    print("Ignoring file patterns: {}".format(ignore_patterns))
 
-        ignore_patterns = self.config['build']['ignore_patterns']
-        print("Ignoring file patterns: {}".format(ignore_patterns))
+    # Gather files and group by extension
+    ext_asset_map = {}
+    ext_dst_map = {}
+    ext_converter_map = {}
+    for converter in converters:
+        ext_dst_map.update(converter.ext_dst_map)
+        for ext in converter.supported_exts:
+            ext_converter_map[ext] = converter
 
-        # Gather files and group by extension
-        ext_asset_map = {}
-        ext_dst_map = {}
-        ext_converter_map = {}
-        for converter in converters:
-            ext_dst_map.update(converter.ext_dst_map)
-            for ext in converter.supported_exts:
-                ext_converter_map[ext] = converter
+    for root, _dirs, files in os.walk(srcdir):
+        for asset in files:
+            src = os.path.join(root, asset)
+            dst = src.replace(srcdir, dstdir)
 
-        for root, _dirs, files in os.walk(srcdir):
-            for asset in files:
-                src = os.path.join(root, asset)
-                dst = src.replace(srcdir, dstdir)
+            ignore_pattern = None
+            for pattern in ignore_patterns:
+                if fnmatch.fnmatch(asset, pattern):
+                    ignore_pattern = pattern
+                    break
+            if ignore_pattern is not None:
+                print('Skip building file {} that matched ignore pattern {}'.format(asset, ignore_pattern))
+                continue
 
-                ignore_pattern = None
-                for pattern in ignore_patterns:
-                    if fnmatch.fnmatch(asset, pattern):
-                        ignore_pattern = pattern
-                        break
-                if ignore_pattern is not None:
-                    print('Skip building file {} that matched ignore pattern {}'.format(asset, ignore_pattern))
-                    continue
+            ext = '.' + asset.split('.', 1)[1]
 
-                ext = '.' + asset.split('.', 1)[1]
+            if ext in ext_dst_map:
+                dst = dst.replace(ext, ext_dst_map[ext])
 
-                if ext in ext_dst_map:
-                    dst = dst.replace(ext, ext_dst_map[ext])
+            if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
+                print('Skip building up-to-date file: {}'.format(dst))
+                continue
 
-                if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
-                    print('Skip building up-to-date file: {}'.format(dst))
-                    continue
+            if ext not in ext_asset_map:
+                ext_asset_map[ext] = []
 
-                if ext not in ext_asset_map:
-                    ext_asset_map[ext] = []
+            print('Adding {} to conversion list to satisfy {}'.format(src, dst))
+            ext_asset_map[ext].append(os.path.join(root, asset))
 
-                print('Adding {} to conversion list to satisfy {}'.format(src, dst))
-                ext_asset_map[ext].append(os.path.join(root, asset))
+    # Find which extensions have hooks available
+    convert_hooks = []
+    for ext, converter in ext_converter_map.items():
+        if ext in ext_asset_map:
+            convert_hooks.append((converter, ext_asset_map[ext]))
+            del ext_asset_map[ext]
 
-        # Find which extensions have hooks available
-        convert_hooks = []
-        for ext, converter in ext_converter_map.items():
-            if ext in ext_asset_map:
-                convert_hooks.append((converter, ext_asset_map[ext]))
-                del ext_asset_map[ext]
+    # Copy what is left
+    for ext in ext_asset_map:
+        converter_copy(config, srcdir, dstdir, ext_asset_map[ext])
 
-        # Copy what is left
-        for ext in ext_asset_map:
-            converter_copy(self.config, srcdir, dstdir, ext_asset_map[ext])
+    # Now run hooks that non-converted assets are in place (copied)
+    for convert_hook in convert_hooks:
+        convert_hook[0](config, srcdir, dstdir, convert_hook[1])
 
-        # Now run hooks that non-converted assets are in place (copied)
-        for convert_hook in convert_hooks:
-            convert_hook[0](self.config, srcdir, dstdir, convert_hook[1])
+    # Write out stub importer so we do not need pkg_resources at runtime
+    renderername = config['general']['renderer']
 
-        # Write out stub importer so we do not need pkg_resources at runtime
-        renderername = self.config['general']['renderer']
-
-        if not renderername:
-            renderername = ConfigDict.CONFIG_DEFAULTS['general']['renderer']
-        for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
-            if entry_point.name == renderername:
-                renderer_entry_point = entry_point
-                break
-        else:
-            raise BuildError('Could not find renderer for {0}'.format(renderername))
-        renderer_stub_path = os.path.join(dstdir, RENDER_STUB_NAME)
-        print('Writing renderer stub to {}'.format(renderer_stub_path))
-        with open(renderer_stub_path, 'w') as renderer_stub_file:
-            renderer_stub_file.write(_RENDER_STUB.format(
-                renderer_entry_point.module_name,
-                repr(renderer_entry_point.attrs)
-            ))
+    if not renderername:
+        renderername = ConfigDict.CONFIG_DEFAULTS['general']['renderer']
+    for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
+        if entry_point.name == renderername:
+            renderer_entry_point = entry_point
+            break
+    else:
+        raise BuildError('Could not find renderer for {0}'.format(renderername))
+    renderer_stub_path = os.path.join(dstdir, RENDER_STUB_NAME)
+    print('Writing renderer stub to {}'.format(renderer_stub_path))
+    with open(renderer_stub_path, 'w') as renderer_stub_file:
+        renderer_stub_file.write(_RENDER_STUB.format(
+            renderer_entry_point.module_name,
+            repr(renderer_entry_point.attrs)
+        ))
 
 
-        print("Build took {:.4f}s".format(time.perf_counter() - stime))
+    print("Build took {:.4f}s".format(time.perf_counter() - stime))
 
-    @disallow_frozen
-    def run(self):
-        mainfile = get_abs_path(self.config, self.config['run']['main_file'])
-        print("Running main file: {}".format(mainfile))
-        args = [mainfile] + shlex.split(self.config['run']['extra_args'])
-        #print("Args: {}".format(args))
-        run_script(self.config, args, cwd=self.config['internal']['projectdir'])
 
-    @disallow_frozen
-    def dist(self, build_installers=True, platforms=None):
-        args = [
-            'setup.py',
-        ]
+@ensure_config
+@disallow_frozen
+def run(config=None):
+    mainfile = get_abs_path(config, config['run']['main_file'])
+    print("Running main file: {}".format(mainfile))
+    args = [mainfile] + shlex.split(config['run']['extra_args'])
+    #print("Args: {}".format(args))
+    run_script(config, args, cwd=config['internal']['projectdir'])
 
-        if build_installers:
-            args += ['bdist_apps']
-        else:
-            args += ['build_apps']
 
-        if platforms is not None:
-            args += ['-p', '{}'.format(','.join(platforms))]
+@ensure_config
+@disallow_frozen
+def dist(config=None, build_installers=True, platforms=None):
+    args = [
+        'setup.py',
+    ]
 
-        run_script(self.config, args, cwd=self.config['internal']['projectdir'])
+    if build_installers:
+        args += ['bdist_apps']
+    else:
+        args += ['build_apps']
 
-    @disallow_frozen
-    def clean(self):
-        export_dir = self.config['build']['export_dir']
-        shutil.rmtree(get_abs_path(self.config, export_dir), ignore_errors=True)
-        shutil.rmtree(get_abs_path(self.config, 'build'), ignore_errors=True)
-        shutil.rmtree(get_abs_path(self.config, 'dist'), ignore_errors=True)
+    if platforms is not None:
+        args += ['-p', '{}'.format(','.join(platforms))]
+
+    run_script(config, args, cwd=config['internal']['projectdir'])
+
+
+@ensure_config
+@disallow_frozen
+def clean(config=None):
+    export_dir = config['build']['export_dir']
+    shutil.rmtree(get_abs_path(config, export_dir), ignore_errors=True)
+    shutil.rmtree(get_abs_path(config, 'build'), ignore_errors=True)
+    shutil.rmtree(get_abs_path(config, 'dist'), ignore_errors=True)
