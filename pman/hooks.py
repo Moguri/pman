@@ -103,10 +103,12 @@ def create_blender(projectdir, config):
             config['build']['ignore_patterns'].append(pattern)
 
     if 'blend2bam' not in config['build']['converters']:
-        config['build']['converters'].append('blend2bam')
+        project_layer = config.layers['project']
+        project_layer['build']['converters'].append('blend2bam')
 
     if 'blender' not in config:
-        config['blender'] = collections.OrderedDict([
+        user_layer = config.layers['user']
+        user_layer['blender'] = collections.OrderedDict([
             ('last_path', 'blender'),
             ('use_last_path', True),
         ])
