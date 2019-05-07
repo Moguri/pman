@@ -3,8 +3,6 @@ import os
 import subprocess
 
 from . import creationutils
-from . import core
-
 
 class Converter(object):
     def __init__(self, supported_exts, ext_dst_map=None):
@@ -24,15 +22,15 @@ class Converter(object):
 
 
 @Converter(['.blend'])
-def converter_blend_bam(config, user_config, srcdir, dstdir, assets):
+def converter_blend_bam(config, srcdir, dstdir, assets):
     args = [
         'blend2bam',
         '--srcdir', srcdir,
         '--material-mode', config['general']['material_mode'],
         '--physics-engine', config['general']['physics_engine'],
     ]
-    if user_config['blender']['use_last_path']:
-        blenderdir = os.path.dirname(user_config['blender']['last_path'])
+    if config['blender']['use_last_path']:
+        blenderdir = os.path.dirname(config['blender']['last_path'])
         args += [
             '--blender-dir', blenderdir,
         ]
@@ -51,7 +49,7 @@ def converter_blend_bam(config, user_config, srcdir, dstdir, assets):
     '.fbx', '.dae',
     '.ply',
 ])
-def converter_native_bam(_config, _user_config, srcdir, dstdir, assets):
+def converter_native_bam(_config, srcdir, dstdir, assets):
     processes = []
     for asset in assets:
         if asset.endswith('.mtl'):
@@ -73,7 +71,7 @@ def converter_native_bam(_config, _user_config, srcdir, dstdir, assets):
         proc.wait()
 
 
-def create_git(projectdir, config, _user_config):
+def create_git(projectdir, config):
     if not os.path.exists(os.path.join(projectdir, '.git')):
         args = [
             'git',
@@ -97,7 +95,7 @@ def create_git(projectdir, config, _user_config):
         with open(gitignorepath, 'a') as gitignorefile:
             gitignorefile.write(config['build']['export_dir'])
 
-def create_blender(projectdir, config, user_config):
+def create_blender(projectdir, config):
     # Update config
     ignore_patterns = ['*.blend1', '*.blend2']
     for pattern in ignore_patterns:
@@ -107,15 +105,14 @@ def create_blender(projectdir, config, user_config):
     if 'blend2bam' not in config['build']['converters']:
         config['build']['converters'].append('blend2bam')
 
-    if 'blender' not in user_config:
-        user_config['blender'] = collections.OrderedDict([
+    if 'blender' not in config:
+        config['blender'] = collections.OrderedDict([
             ('last_path', 'blender'),
             ('use_last_path', True),
         ])
 
 
-    core.write_config(config)
-    core.write_user_config(user_config)
+    config.write()
 
     # Update requirements.txt
     add_blend2bam_req = True

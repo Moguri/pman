@@ -87,8 +87,6 @@ def create_project(projectdir='.', extras=None):
             pass
 
     config = get_config(projectdir)
-    write_config(config)
-    user_config = get_user_config(projectdir)
 
     creationutils.create_dirs(projectdir, (
         config['build']['asset_dir'],
@@ -117,7 +115,7 @@ def create_project(projectdir='.', extras=None):
             if extra not in entrypoints:
                 print('Could not find creation extra: {}'.format(extra))
                 continue
-            entrypoints[extra](projectdir, config, user_config)
+            entrypoints[extra](projectdir, config)
 
 
 
@@ -137,8 +135,7 @@ def get_python_program(config=None):
     ]
 
     if config is not None:
-        user_config = get_user_config(config['internal']['projectdir'])
-        confpy = user_config['python']['path']
+        confpy = config['python']['path']
         if confpy:
             python_programs.insert(0, confpy)
 
@@ -170,10 +167,9 @@ def in_venv():
 
 
 def run_program(config, args, use_venv=True, cwd=None):
-    user_config = get_user_config(config['internal']['projectdir'])
-    if use_venv and user_config['python']['in_venv']:
+    if use_venv and config['python']['in_venv']:
         actv_this_loc = os.path.join(
-            os.path.dirname(user_config['python']['path']),
+            os.path.dirname(config['python']['path']),
             'activate_this.py'
         )
         args = [
@@ -184,8 +180,7 @@ def run_program(config, args, use_venv=True, cwd=None):
     subprocess.call(args, cwd=cwd)
 
 def run_script(config, args, use_venv=True, cwd=None):
-    user_config = get_user_config(config['internal']['projectdir'])
-    if use_venv and user_config['python']['in_venv']:
+    if use_venv and config['python']['in_venv']:
         pyprog = 'python'
     else:
         pyprog = get_python_program(config)
@@ -230,7 +225,7 @@ def get_renderer():
 RENDER_STUB_NAME = 'pman_renderer.py'
 
 
-def converter_copy(_config, _user_config, srcdir, dstdir, assets):
+def converter_copy(_config, srcdir, dstdir, assets):
     for asset in assets:
         src = asset
         dst = src.replace(srcdir, dstdir)
@@ -242,12 +237,9 @@ def converter_copy(_config, _user_config, srcdir, dstdir, assets):
 
 class PMan(object):
     def __init__(self, config=None, config_startdir=None):
-        if config:
-            self.config = config
-            self.user_config = get_user_config(config['internal']['projectdir'])
-        else:
+        self.config = config
+        if self.config is None:
             self.config = get_config(config_startdir)
-            self.user_config = get_user_config(config_startdir)
 
         if is_frozen():
             self.converters = []
@@ -344,11 +336,11 @@ class PMan(object):
 
         # Copy what is left
         for ext in ext_asset_map:
-            converter_copy(self.config, self.user_config, srcdir, dstdir, ext_asset_map[ext])
+            converter_copy(self.config, srcdir, dstdir, ext_asset_map[ext])
 
         # Now run hooks that non-converted assets are in place (copied)
         for convert_hook in convert_hooks:
-            convert_hook[0](self.config, self.user_config, srcdir, dstdir, convert_hook[1])
+            convert_hook[0](self.config, srcdir, dstdir, convert_hook[1])
 
         # Write out stub importer so we do not need pkg_resources at runtime
         renderername = self.config['general']['renderer']
