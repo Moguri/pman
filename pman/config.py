@@ -24,6 +24,7 @@ class ConfigDict:
         ])),
         ('run', collections.OrderedDict([
             ('main_file', 'main.py'),
+            ('extra_args', ''),
             ('auto_build', True),
             ('auto_save', True),
         ])),

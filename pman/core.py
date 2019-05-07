@@ -1,6 +1,7 @@
 import imp
 import fnmatch
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -375,7 +376,7 @@ class PMan(object):
 
         mainfile = self.get_abs_path(self.config['run']['main_file'])
         print("Running main file: {}".format(mainfile))
-        args = [mainfile]
+        args = [mainfile] + shlex.split(self.config['run']['extra_args'])
         #print("Args: {}".format(args))
         run_script(self.config, args, cwd=self.config['internal']['projectdir'])
 
