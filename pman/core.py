@@ -5,121 +5,39 @@ import shutil
 import subprocess
 import sys
 import time
-from collections import OrderedDict
 
 
-from . import toml
 from . import creationutils
-
-
-class PManException(Exception):
-    pass
-
-
-class NoConfigError(PManException):
-    pass
-
-
-class CouldNotFindPythonError(PManException):
-    pass
-
-
-class BuildError(PManException):
-    pass
-
-
-class FrozenEnvironmentError(PManException):
-    def __init__(self):
-        super().__init__("Operation not supported in frozen applications")
-
-
-_CONFIG_DEFAULTS = OrderedDict([
-    ('general', OrderedDict([
-        ('name', 'Game'),
-        ('renderer', 'none'),
-        ('material_mode', 'legacy'),
-        ('physics_engine', 'builtin'),
-    ])),
-    ('build', OrderedDict([
-        ('asset_dir', 'assets/'),
-        ('export_dir', '.built_assets/'),
-        ('ignore_patterns', []),
-        ('converters', ['native2bam']),
-    ])),
-    ('run', OrderedDict([
-        ('main_file', 'main.py'),
-        ('auto_build', True),
-        ('auto_save', True),
-    ])),
-])
-
-_USER_CONFIG_DEFAULTS = OrderedDict([
-    ('python', OrderedDict([
-        ('path', ''),
-        ('in_venv', False),
-    ])),
-])
-
-
-def _update_conf(config):
-    if 'general' in config:
-        if 'render_plugin' in config['general']:
-            if '/' in config['general']['render_plugin']:
-                # Convert from path to module
-                renderplugin = config['general']['render_plugin']
-                rppath = get_abs_path(config, renderplugin)
-                maindir = os.path.dirname(get_abs_path(config, config['run']['main_file']))
-                rppath = os.path.splitext(os.path.relpath(rppath, maindir))[0]
-                module_parts = rppath.split(os.sep)
-                modname = '.'.join(module_parts)
-                config['general']['render_plugin'] = modname
-            config['general']['renderer'] = config['general']['render_plugin']
-            del config['general']['render_plugin']
-        if 'converter_hooks' in config['general']:
-            config['general']['converters'] = [
-                'blend2bam' if i == 'pman.hooks.converter_blend_bam' else i
-                for i in config['general']['converter_hooks']
-            ]
-            del config['general']['convert_hooks']
-
-
-def _get_config(startdir, conf_name, defaults):
-    try:
-        if startdir is None:
-            startdir = os.getcwd()
-    except FileNotFoundError:
-        # The project folder was deleted on us
-        raise NoConfigError("Could not find config file")
-
-    dirs = os.path.abspath(startdir).split(os.sep)
-
-    while dirs:
-        cdir = os.sep.join(dirs)
-        if cdir.strip() and conf_name in os.listdir(cdir):
-            configpath = os.path.join(cdir, conf_name)
-
-            confdict = toml.load(configpath)
-            confdict = {
-                k: dict(defaults.get(k, {}), **confdict.get(k, {}))
-                for k in set(defaults.keys()) | set(confdict.keys())
-            }
-
-            confdict['internal'] = {
-                'projectdir': os.path.dirname(configpath),
-            }
-
-            _update_conf(confdict)
-
-            return confdict
-
-        dirs.pop()
-
-    # No config found
-    raise NoConfigError("Could not find config file")
+from .exceptions import CouldNotFindPythonError, BuildError, FrozenEnvironmentError, NoConfigError
+from .config import ConfigDict
 
 
 def get_config(startdir=None):
-    return _get_config(startdir, '.pman', _CONFIG_DEFAULTS)
+    config = ConfigDict.load(startdir)
+    user_layer = config.layers['user']
+
+    if 'python' not in user_layer:
+        user_layer['python'] = {}
+
+    if 'path' not in user_layer['python']:
+        user_layer['python']['path'] = ''
+
+    confpy = config['python']['path']
+    if not confpy:
+        # Try to find a Python program to default to
+        try:
+            pyprog = get_python_program()
+            pyloc = shutil.which(pyprog)
+            user_layer['python']['path'] = pyloc
+
+            activate_this_loc = os.path.join(os.path.dirname(pyloc), 'activate_this.py')
+            user_layer['python']['in_venv'] = os.path.exists(activate_this_loc)
+
+            config.write()
+        except CouldNotFindPythonError:
+            pass
+
+    return config
 
 
 def config_exists(startdir=None):
@@ -133,49 +51,17 @@ def config_exists(startdir=None):
 
 
 def get_user_config(startdir=None):
-    try:
-        conf = _get_config(startdir, '.pman.user', _USER_CONFIG_DEFAULTS)
-    except NoConfigError:
-        # No user config, just create one
-        config = get_config(startdir)
-        file_path = os.path.join(config['internal']['projectdir'], '.pman.user')
-        print("Creating user config at {}".format(file_path))
-        open(file_path, 'w').close()
-
-        conf = _get_config(startdir, '.pman.user', _USER_CONFIG_DEFAULTS)
-
-    confpy = conf['python']['path']
-    if not confpy:
-        # Try to find a Python program to default to
-        try:
-            pyprog = get_python_program()
-            pyloc = shutil.which(pyprog)
-            conf['python']['path'] = pyloc
-
-            activate_this_loc = os.path.join(os.path.dirname(pyloc), 'activate_this.py')
-            conf['python']['in_venv'] = os.path.exists(activate_this_loc)
-
-            write_user_config(conf)
-        except CouldNotFindPythonError:
-            pass
-
-    return conf
-
-
-def _write_config(config, conf_name):
-    writecfg = config.copy()
-    del writecfg['internal']
-
-    with open(os.path.join(config['internal']['projectdir'], conf_name), 'w') as f:
-        toml.dump(writecfg, f)
+    '''Compatibility alias, use get_config() instead'''
+    return get_config(startdir)
 
 
 def write_config(config):
-    _write_config(config, '.pman')
+    config.write()
 
 
 def write_user_config(user_config):
-    _write_config(user_config, '.pman.user')
+    '''Compatibility alias, use write_config() instead'''
+    write_config(user_config)
 
 
 def is_frozen():
@@ -468,7 +354,7 @@ class PMan(object):
         renderername = self.config['general']['renderer']
 
         if not renderername:
-            renderername = _CONFIG_DEFAULTS['general']['renderer']
+            renderername = ConfigDict.CONFIG_DEFAULTS['general']['renderer']
         for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
             if entry_point.name == renderername:
                 renderer_entry_point = entry_point
