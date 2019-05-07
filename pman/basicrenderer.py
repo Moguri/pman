@@ -27,7 +27,8 @@ varying vec2 texcoord;
 
 
 void main() {
-    vec3 color = pow(texture2D(tex, texcoord).rgb, vec3(1.0/2.2));
+    // C_srgb_2 linear to sRGB approximation from https://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+    vec3 color = max(vec3(1.055) * pow(texture2D(tex, texcoord).rgb, vec3(0.416666667)) - vec3(0.055), vec3(0));
     gl_FragColor = vec4(color, 1.0);
 }
 """
