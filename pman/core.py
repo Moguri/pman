@@ -1,5 +1,6 @@
 import imp
 import fnmatch
+import functools
 import os
 import shlex
 import shutil
@@ -68,11 +69,17 @@ def write_user_config(user_config):
 def is_frozen():
     return imp.is_frozen(__name__)
 
+def disallow_frozen(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if is_frozen():
+            raise FrozenEnvironmentError()
+        return func(*args, **kwargs)
+    return wrapper
 
+
+@disallow_frozen
 def create_project(projectdir='.', extras=None):
-    if is_frozen():
-        raise FrozenEnvironmentError()
-
     if not os.path.exists(projectdir):
         os.makedirs(projectdir)
 
@@ -246,10 +253,8 @@ class PMan(object):
         if self.config is None:
             self.config = get_config(config_startdir)
 
+    @disallow_frozen
     def build(self):
-        if is_frozen():
-            raise FrozenEnvironmentError()
-
         import pkg_resources
         converters = [
             entry_point.load()
@@ -352,20 +357,16 @@ class PMan(object):
 
         print("Build took {:.4f}s".format(time.perf_counter() - stime))
 
+    @disallow_frozen
     def run(self):
-        if is_frozen():
-            raise FrozenEnvironmentError()
-
         mainfile = get_abs_path(self.config, self.config['run']['main_file'])
         print("Running main file: {}".format(mainfile))
         args = [mainfile] + shlex.split(self.config['run']['extra_args'])
         #print("Args: {}".format(args))
         run_script(self.config, args, cwd=self.config['internal']['projectdir'])
 
+    @disallow_frozen
     def dist(self, build_installers=True, platforms=None):
-        if is_frozen():
-            raise FrozenEnvironmentError()
-
         args = [
             'setup.py',
         ]
@@ -380,10 +381,8 @@ class PMan(object):
 
         run_script(self.config, args, cwd=self.config['internal']['projectdir'])
 
+    @disallow_frozen
     def clean(self):
-        if is_frozen():
-            raise FrozenEnvironmentError()
-
         export_dir = self.config['build']['export_dir']
         shutil.rmtree(get_abs_path(self.config, export_dir), ignore_errors=True)
         shutil.rmtree(get_abs_path(self.config, 'build'), ignore_errors=True)
