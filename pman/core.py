@@ -262,11 +262,7 @@ class PMan(object):
             if entry_point.name in self.config['build']['converters']
         ]
 
-        if hasattr(time, 'perf_counter'):
-            #pylint:disable=no-member
-            stime = time.perf_counter()
-        else:
-            stime = time.time()
+        stime = time.perf_counter()
         print("Starting build")
 
         srcdir = self.get_abs_path(self.config['build']['asset_dir'])
@@ -359,12 +355,7 @@ class PMan(object):
             ))
 
 
-        if hasattr(time, 'perf_counter'):
-            #pylint:disable=no-member
-            etime = time.perf_counter()
-        else:
-            etime = time.time()
-        print("Build took {:.4f}s".format(etime - stime))
+        print("Build took {:.4f}s".format(time.perf_counter() - stime))
 
     def run(self):
         if is_frozen():
