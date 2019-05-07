@@ -121,11 +121,15 @@ def create_project(projectdir='.', extras=None):
 
 
 def get_abs_path(config, path):
-    return PMan(config=config).get_abs_path(path)
+    return os.path.join(
+        config['internal']['projectdir'],
+        path
+    )
 
 
 def get_rel_path(config, path):
-    return PMan(config=config).get_rel_path(path)
+    return os.path.relpath(path, config['internal']['projectdir'])
+
 
 def get_python_program(config=None):
     python_programs = [
@@ -242,15 +246,6 @@ class PMan(object):
         if self.config is None:
             self.config = get_config(config_startdir)
 
-    def get_abs_path(self, path):
-        return os.path.join(
-            self.config['internal']['projectdir'],
-            path
-        )
-
-    def get_rel_path(self, path):
-        return os.path.relpath(path, self.config['internal']['projectdir'])
-
     def build(self):
         if is_frozen():
             raise FrozenEnvironmentError()
@@ -265,8 +260,8 @@ class PMan(object):
         stime = time.perf_counter()
         print("Starting build")
 
-        srcdir = self.get_abs_path(self.config['build']['asset_dir'])
-        dstdir = self.get_abs_path(self.config['build']['export_dir'])
+        srcdir = get_abs_path(self.config, self.config['build']['asset_dir'])
+        dstdir = get_abs_path(self.config, self.config['build']['export_dir'])
 
         if not os.path.exists(srcdir):
             print("warning: could not find asset directory: {}".format(srcdir))
@@ -361,7 +356,7 @@ class PMan(object):
         if is_frozen():
             raise FrozenEnvironmentError()
 
-        mainfile = self.get_abs_path(self.config['run']['main_file'])
+        mainfile = get_abs_path(self.config, self.config['run']['main_file'])
         print("Running main file: {}".format(mainfile))
         args = [mainfile] + shlex.split(self.config['run']['extra_args'])
         #print("Args: {}".format(args))
@@ -389,6 +384,7 @@ class PMan(object):
         if is_frozen():
             raise FrozenEnvironmentError()
 
-        shutil.rmtree(self.get_abs_path(self.config['build']['export_dir']), ignore_errors=True)
-        shutil.rmtree(self.get_abs_path('build'), ignore_errors=True)
-        shutil.rmtree(self.get_abs_path('dist'), ignore_errors=True)
+        export_dir = self.config['build']['export_dir']
+        shutil.rmtree(get_abs_path(self.config, export_dir), ignore_errors=True)
+        shutil.rmtree(get_abs_path(self.config, 'build'), ignore_errors=True)
+        shutil.rmtree(get_abs_path(self.config, 'dist'), ignore_errors=True)
