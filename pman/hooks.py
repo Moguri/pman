@@ -23,19 +23,28 @@ class Converter(object):
 
 @Converter(['.blend'])
 def converter_blend_bam(config, srcdir, dstdir, assets):
+    import blend2bam
+
     # Setup some defaults
     config_defaults = config.layers['default']
     config_defaults['blend2bam'] = {
         'material_mode': 'legacy',
         'physics_engine': 'builtin',
+        'pipeline': 'gltf',
     }
 
     args = [
         'blend2bam',
         '--srcdir', srcdir,
-        '--material-mode', config['general']['material_mode'],
-        '--physics-engine', config['general']['physics_engine'],
+        '--material-mode', config['blend2bam']['material_mode'],
+        '--physics-engine', config['blend2bam']['physics_engine'],
     ]
+
+    _, minorver = [int(i) for i in getattr(blend2bam, '__version__', '0.6').split('.')]
+    if minorver >= 7:
+        args += [
+            '--pipeline', config['blend2bam']['pipeline'],
+        ]
 
     if config['blender']['use_last_path']:
         blenderdir = os.path.dirname(config['blender']['last_path'])
