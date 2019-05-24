@@ -13,8 +13,6 @@ class ConfigDict:
         ('general', collections.OrderedDict([
             ('name', 'Game'),
             ('renderer', 'none'),
-            ('material_mode', 'legacy'),
-            ('physics_engine', 'builtin'),
         ])),
         ('build', collections.OrderedDict([
             ('asset_dir', 'assets/'),
@@ -38,10 +36,10 @@ class ConfigDict:
     USER_CONFIG_NAME = '{}.user'.format(PROJECT_CONFIG_NAME)
 
     def __init__(self, project_conf_file, user_conf_file):
-        project_conf = self._update_conf(toml.load(project_conf_file))
+        project_conf = toml.load(project_conf_file)
         user_conf = {}
         if os.path.exists(user_conf_file):
-            user_conf = self._update_conf(toml.load(user_conf_file))
+            user_conf = toml.load(user_conf_file)
         self.layers = collections.OrderedDict([
             ('default', self._CONFIG_DEFAULTS),
             ('project', project_conf),
@@ -52,6 +50,8 @@ class ConfigDict:
                 },
             }),
         ])
+
+        self._update_conf()
 
 
     def __getitem__(self, key):
@@ -70,12 +70,26 @@ class ConfigDict:
 
         return False
 
-    def _update_conf(self, config):
+    def _update_conf(self):
         '''Handle updating old configs or fields that change on load'''
 
-        # Currently empty
+        confs = [
+            self.layers['project'],
+            self.layers['user'],
+        ]
 
-        return config
+        for conf in confs:
+            if 'general' in conf:
+                blend2bam_dict = {}
+                if 'material_mode' in conf['general']:
+                    blend2bam_dict['material_mode'] = conf['general']['material_mode']
+                    del conf['general']['material_mode']
+                if 'physics_engine' in conf['general']:
+                    blend2bam_dict['physics_engine'] = conf['general']['physics_engine']
+                    del conf['general']['physics_engine']
+                if blend2bam_dict:
+                    conf['blend2bam'] = blend2bam_dict
+                    self.write()
 
     @classmethod
     def load(cls, startdir):

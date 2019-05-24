@@ -41,7 +41,17 @@ def test_conf_override(projectdir):
     assert config['general']['name'] == 'username'
 
     # Check that non-overridden default settings are still intact
-    assert config['general']['physics_engine'] == config_defaults['general']['physics_engine']
+    assert config['build']['asset_dir'] == config_defaults['build']['asset_dir']
 
     # Check that non-overridden project settings are still intact
     assert config['general']['renderer'] == 'basic'
+
+def test_conversion(projectdir):
+    config = pman.get_config()
+    config.layers['project']['general'] = {
+        'material_mode': 'pbr',
+    }
+    config.write()
+
+    config = pman.get_config()
+    assert config['blend2bam']['material_mode'] == 'pbr'
