@@ -69,7 +69,11 @@ def write_user_config(user_config):
 def ensure_config(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if 'config' not in kwargs or kwargs['config'] is None:
+        has_config = (
+            len(args) > 0 and args[0] is not None or
+            'config' in kwargs and kwargs['config'] is not None
+        )
+        if not has_config:
             kwargs['config'] = get_config()
         return func(*args, **kwargs)
     return wrapper

@@ -1,6 +1,7 @@
 import os
 
 import pman
+import pman.shim
 
 #pylint:disable=unused-argument
 
@@ -66,3 +67,8 @@ def test_run_args(projectdir):
 
     with open('tmp', 'r') as tmpfile:
         assert tmpfile.read() == "['--test', 'hello world']"
+
+def test_shim(projectdir):
+    config = pman.get_config()
+    config['general']['renderer'] = 'none'
+    pman.shim.init(None)
