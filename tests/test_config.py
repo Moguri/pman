@@ -1,7 +1,6 @@
 import os
 
 import pman
-from pman.config import ConfigDict
 
 
 #pylint:disable=unused-argument
@@ -21,10 +20,9 @@ def test_conf_contains(projectdir):
 
 
 def test_conf_override(projectdir):
-    config_defaults = ConfigDict.CONFIG_DEFAULTS
-
     # Check default
     config = pman.get_config()
+    config_defaults = config.layers['default']
     assert config['general']['name'] == config_defaults['general']['name']
 
     # Check that project overrides default

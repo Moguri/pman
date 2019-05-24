@@ -9,7 +9,7 @@ from .exceptions import NoConfigError
 class ConfigDict:
     '''Extend ChainMap to provide a config object with overlays'''
 
-    CONFIG_DEFAULTS = collections.OrderedDict([
+    _CONFIG_DEFAULTS = collections.OrderedDict([
         ('general', collections.OrderedDict([
             ('name', 'Game'),
             ('renderer', 'none'),
@@ -43,7 +43,7 @@ class ConfigDict:
         if os.path.exists(user_conf_file):
             user_conf = self._update_conf(toml.load(user_conf_file))
         self.layers = collections.OrderedDict([
-            ('default', self.CONFIG_DEFAULTS),
+            ('default', self._CONFIG_DEFAULTS),
             ('project', project_conf),
             ('user', user_conf),
             ('internal', {

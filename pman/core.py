@@ -331,7 +331,7 @@ def build(config=None):
     renderername = config['general']['renderer']
 
     if not renderername:
-        renderername = ConfigDict.CONFIG_DEFAULTS['general']['renderer']
+        renderername = config.layers['default']['general']['renderer']
     for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
         if entry_point.name == renderername:
             renderer_entry_point = entry_point
