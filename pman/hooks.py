@@ -113,6 +113,10 @@ def create_blender(projectdir, config):
 
     if 'blend2bam' not in config['build']['converters']:
         project_layer = config.layers['project']
+        if 'build' not in project_layer:
+            project_layer['build'] = {}
+        if 'Converters' not in project_layer['build']:
+            project_layer['build']['converters'] = []
         project_layer['build']['converters'].append('blend2bam')
 
     if 'blender' not in config:
