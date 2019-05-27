@@ -30,6 +30,11 @@ class ConfigDict:
             ('path', ''),
             ('in_venv', False),
         ])),
+        ('blend2bam', collections.OrderedDict([
+            ('material_mode', 'legacy'),
+            ('physics_engine', 'builtin'),
+            ('pipeline', 'gltf'),
+        ])),
     ])
 
     PROJECT_CONFIG_NAME = '.pman'

@@ -25,14 +25,6 @@ class Converter(object):
 def converter_blend_bam(config, srcdir, dstdir, assets):
     import blend2bam
 
-    # Setup some defaults
-    config_defaults = config.layers['default']
-    config_defaults['blend2bam'] = {
-        'material_mode': 'legacy',
-        'physics_engine': 'builtin',
-        'pipeline': 'gltf',
-    }
-
     args = [
         'blend2bam',
         '--srcdir', srcdir,
