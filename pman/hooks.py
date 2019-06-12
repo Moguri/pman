@@ -1,5 +1,7 @@
 import collections
+import fnmatch
 import os
+import pprint
 import subprocess
 
 from . import creationutils
@@ -25,32 +27,67 @@ class Converter(object):
 def converter_blend_bam(config, srcdir, dstdir, assets):
     import blend2bam
 
-    args = [
-        'blend2bam',
-        '--srcdir', srcdir,
-        '--material-mode', config['blend2bam']['material_mode'],
-        '--physics-engine', config['blend2bam']['physics_engine'],
-    ]
+    remaining_assets = set(assets)
 
-    _, minorver = [int(i) for i in getattr(blend2bam, '__version__', '0.6').split('.')]
-    if minorver >= 7:
-        args += [
-            '--pipeline', config['blend2bam']['pipeline'],
+    default_mat_mode = config['blend2bam']['material_mode']
+    default_phy_engine = config['blend2bam']['physics_engine']
+    default_pipeline = config['blend2bam']['pipeline']
+    runs = []
+
+    for override in config['blend2bam']['overrides']:
+        files = {
+            i for i in assets if fnmatch.fnmatchcase(i, override['pattern'])
+        }
+
+        if not files:
+            continue
+
+        runs.append({
+            'files': files,
+            'material_mode': override.get('material_mode', default_mat_mode),
+            'physics_engine': override.get('physics_engine', default_phy_engine),
+            'pipeline': override.get('pipeline', default_pipeline),
+        })
+        print('blend2bam: Using the following override\n{}'.format(
+            pprint.pformat(runs[-1])
+        ))
+        remaining_assets -= files
+
+    runs.append({
+        'files': remaining_assets,
+        'material_mode': default_mat_mode,
+        'physics_engine': default_phy_engine,
+        'pipeline': default_pipeline,
+    })
+
+
+    for run in runs:
+        args = [
+            'blend2bam',
+            '--srcdir', srcdir,
+            '--material-mode', run['material_mode'],
+            '--physics-engine', run['physics_engine'],
         ]
 
-    if config['blender']['use_last_path']:
-        blenderdir = os.path.dirname(config['blender']['last_path'])
+        _, minorver = [int(i) for i in getattr(blend2bam, '__version__', '0.6').split('.')]
+        if minorver >= 7:
+            args += [
+                '--pipeline', run['pipeline'],
+            ]
+
+        if config['blender']['use_last_path']:
+            blenderdir = os.path.dirname(config['blender']['last_path'])
+            args += [
+                '--blender-dir', blenderdir,
+            ]
+        args += run['files']
         args += [
-            '--blender-dir', blenderdir,
+            dstdir
         ]
-    args += assets
-    args += [
-        dstdir
-    ]
 
-    # print("Calling blend2bam: {}".format(' '.join(args)))
+        print("Calling blend2bam: {}".format(' '.join(args)))
 
-    subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
+        subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
 
 @Converter([
     '.egg.pz', '.egg',

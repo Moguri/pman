@@ -34,6 +34,7 @@ class ConfigDict:
             ('material_mode', 'legacy'),
             ('physics_engine', 'builtin'),
             ('pipeline', 'gltf'),
+            ('overrides', []),
         ])),
     ])
 
