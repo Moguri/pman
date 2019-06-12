@@ -55,7 +55,66 @@ This configuration uses [TOML](https://github.com/toml-lang/toml) for markup.
 The `.pman` configuration file is project-wide and should be checked in under version control.
 
 Another, per-user configuration file also exists at the project root as `.pman.user`.
-This configuration file stores user settings and should *not* be checked into version control.
+This configuration file stores user settings and should *not* be checked into version control. 
+
+Settings in `.pman.user` take precedence over settings in `.pman`. Settings defined in neither `.pman` nor `.pman.user` will use default values as defined below.
+
+### General Options
+Section name: `general`
+
+|option|default|description|
+|---|---|---|
+|name|`"Game"`|The project name. For now this is only used for naming the built application in the default `setup.py`.|
+|renderer|`"none"`|A hook to control rendering options. This is useful to share rendering logic (e.g., shaders) between an editor and an application.|
+
+### Build Options
+Section name: `build`
+
+|option|default|description|
+|---|---|---|
+|asset_dir|`"assets/"`|The directory to look for assets to convert.|
+|export_dir|`".built_assets/"`|The directory to store built assets.|
+|ignore_patterns|`[]`|A case-insensitive list of patterns. Files matching any of these patterns will not be ignored during the build step. Pattern matching is done using [the fnmatch module](https://docs.python.org/3/library/fnmatch.html)
+|converters|`["native2bam"]`|A list of hooks to perform conversions. Any files not associated with a converter will simply be copied (assuming they do not match an item in `ignore_patterns`).|
+
+### Run Options
+Section name: `run`
+
+|option|default|description|
+|---|---|---|
+|main_file|`"main.py"`|The entry-point to the application.|
+|extra_args|`""`|A string of extra arugments that are append to the invocation of `main_file`.|
+|auto_build|`true`|If `true`, automatically run builds as part of running the application (via `pman.shim.init`). This is disabled in deployed applications.|
+
+## Hooks
+
+To extend functionallity, pman has supports for "hooks." There are currently hooks available for conversion (converters) and controlling rendering (renderers). These hooks are specified in config via [Setuptools entry points](https://packaging.python.org/specifications/entry-points/). Hooks that ship with pman and their configuration options are discribed below.
+
+### Converters
+
+#### native2bam
+Entry point: `native2bam`
+Support file formats: `egg`, `egg.pz`, `obj` (and `mtl`), `fbx`, `dae`, `ply`
+
+Loads the file into Panda and saves the result out to BAM. This relies on Panda's builtin file loading capabilities.
+
+##### Options
+None
+
+#### blend2bam
+Entry point: `blend2bam`
+Supported file formats: `blend`
+
+Converts Blender files to BAM files via [blend2bam](https://github.com/Moguri/blend2bam).
+
+##### Options
+Section name: `blend2bam`
+
+|option|default|description|
+|---|---|---|
+|material_mode|`"legacy"`|Specify whether to use the default Panda materials ("legacy") or Panda's new PBR material attributes ("pbr"). This is only used by the "gltf" pipeline; the "egg" always uses "legacy".|
+|physics_engine|`"builtin"`|The physics engine that collision solids should be built for. To export for Panda's builtin collision system, use "builtin." For Bullet, use "bullet." This is only used by the "gltf" pipeline; the "egg" pipeline always uses "builtin."|
+|pipeline|`"gltf"`|The backend that blend2bam uses to convert blend files. Go [here](https://github.com/Moguri/blend2bam#pipelines) for more information.|
 
 ## License
 
