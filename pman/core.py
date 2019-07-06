@@ -260,72 +260,15 @@ def build(config=None):
     srcdir = get_abs_path(config, config['build']['asset_dir'])
     dstdir = get_abs_path(config, config['build']['export_dir'])
 
-    if not os.path.exists(srcdir):
-        print("warning: could not find asset directory: {}".format(srcdir))
-        return
-
-    if not os.path.exists(dstdir):
-        print("Creating asset export directory at {}".format(dstdir))
-        os.makedirs(dstdir)
-
     print("Read assets from: {}".format(srcdir))
     print("Export them to: {}".format(dstdir))
 
     ignore_patterns = config['build']['ignore_patterns']
     print("Ignoring file patterns: {}".format(ignore_patterns))
 
-    # Gather files and group by extension
-    ext_asset_map = {}
-    ext_dst_map = {}
-    ext_converter_map = {}
-    for converter in converters:
-        ext_dst_map.update(converter.ext_dst_map)
-        for ext in converter.supported_exts:
-            ext_converter_map[ext] = converter
-
-    for root, _dirs, files in os.walk(srcdir):
-        for asset in files:
-            src = os.path.join(root, asset)
-            dst = src.replace(srcdir, dstdir)
-
-            ignore_pattern = None
-            for pattern in ignore_patterns:
-                if fnmatch.fnmatch(asset, pattern):
-                    ignore_pattern = pattern
-                    break
-            if ignore_pattern is not None:
-                print('Skip building file {} that matched ignore pattern {}'.format(asset, ignore_pattern))
-                continue
-
-            ext = '.' + asset.split('.', 1)[1]
-
-            if ext in ext_dst_map:
-                dst = dst.replace(ext, ext_dst_map[ext])
-
-            if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
-                print('Skip building up-to-date file: {}'.format(dst))
-                continue
-
-            if ext not in ext_asset_map:
-                ext_asset_map[ext] = []
-
-            print('Adding {} to conversion list to satisfy {}'.format(src, dst))
-            ext_asset_map[ext].append(os.path.join(root, asset))
-
-    # Find which extensions have hooks available
-    convert_hooks = []
-    for ext, converter in ext_converter_map.items():
-        if ext in ext_asset_map:
-            convert_hooks.append((converter, ext_asset_map[ext]))
-            del ext_asset_map[ext]
-
-    # Copy what is left
-    for ext in ext_asset_map:
-        converter_copy(config, srcdir, dstdir, ext_asset_map[ext])
-
-    # Now run hooks that non-converted assets are in place (copied)
-    for convert_hook in convert_hooks:
-        convert_hook[0](config, srcdir, dstdir, convert_hook[1])
+    if not os.path.exists(dstdir):
+        print("Creating asset export directory at {}".format(dstdir))
+        os.makedirs(dstdir)
 
     # Write out stub importer so we do not need pkg_resources at runtime
     renderername = config['general']['renderer']
@@ -345,6 +288,62 @@ def build(config=None):
             renderer_entry_point.module_name,
             repr(renderer_entry_point.attrs)
         ))
+
+    if os.path.exists(srcdir) and os.path.isdir(srcdir):
+        # Gather files and group by extension
+        ext_asset_map = {}
+        ext_dst_map = {}
+        ext_converter_map = {}
+        for converter in converters:
+            ext_dst_map.update(converter.ext_dst_map)
+            for ext in converter.supported_exts:
+                ext_converter_map[ext] = converter
+
+        for root, _dirs, files in os.walk(srcdir):
+            for asset in files:
+                src = os.path.join(root, asset)
+                dst = src.replace(srcdir, dstdir)
+
+                ignore_pattern = None
+                for pattern in ignore_patterns:
+                    if fnmatch.fnmatch(asset, pattern):
+                        ignore_pattern = pattern
+                        break
+                if ignore_pattern is not None:
+                    print('Skip building file {} that matched ignore pattern {}'.format(asset, ignore_pattern))
+                    continue
+
+                ext = '.' + asset.split('.', 1)[1]
+
+                if ext in ext_dst_map:
+                    dst = dst.replace(ext, ext_dst_map[ext])
+
+                if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
+                    print('Skip building up-to-date file: {}'.format(dst))
+                    continue
+
+                if ext not in ext_asset_map:
+                    ext_asset_map[ext] = []
+
+                print('Adding {} to conversion list to satisfy {}'.format(src, dst))
+                ext_asset_map[ext].append(os.path.join(root, asset))
+
+        # Find which extensions have hooks available
+        convert_hooks = []
+        for ext, converter in ext_converter_map.items():
+            if ext in ext_asset_map:
+                convert_hooks.append((converter, ext_asset_map[ext]))
+                del ext_asset_map[ext]
+
+        # Copy what is left
+        for ext in ext_asset_map:
+            converter_copy(config, srcdir, dstdir, ext_asset_map[ext])
+
+        # Now run hooks that non-converted assets are in place (copied)
+        for convert_hook in convert_hooks:
+            convert_hook[0](config, srcdir, dstdir, convert_hook[1])
+    else:
+        print("warning: could not find asset directory: {}".format(srcdir))
 
 
     print("Build took {:.4f}s".format(time.perf_counter() - stime))
