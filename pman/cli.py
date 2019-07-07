@@ -30,7 +30,7 @@ def test(_):
         'setup.py',
         'test',
     ]
-    subprocess.call(args, cwd=config['internal']['projectdir'])
+    sys.exit(subprocess.call(args, cwd=config['internal']['projectdir']))
 
 
 def dist(args):
