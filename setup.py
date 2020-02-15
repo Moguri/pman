@@ -20,7 +20,7 @@ setup(
     tests_require=[
         'panda3d',
         'pytest',
-        'pylint==2.2.*',
+        'pylint==2.4.*',
         'pytest-pylint',
     ],
     entry_points={
