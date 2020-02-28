@@ -80,7 +80,7 @@ def ensure_config(func):
 
 
 def is_frozen():
-    return __loader__ == importlib.machinery.FrozenImporter
+    return isinstance(__spec__, importlib.machinery.FrozenImporter)
 
 def disallow_frozen(func):
     @functools.wraps(func)
