@@ -13,7 +13,7 @@ setup(
     ],
     tests_require=[
         'pytest',
-        'pylint',
+        'pylint~=2.4.0',
         'pytest-pylint',
     ],
     cmdclass={
