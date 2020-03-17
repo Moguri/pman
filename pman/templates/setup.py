@@ -25,10 +25,6 @@ setup(
                 CONFIG['build']['export_dir']+'/**',
                 'settings.prc',
             ],
-            'exclude_patterns': [
-                '**/*.py',
-                '__py_cache__/**',
-            ],
             'rename_paths': {
                 CONFIG['build']['export_dir']: 'assets/',
             },
