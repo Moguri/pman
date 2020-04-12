@@ -55,3 +55,7 @@ def test_conversion(projectdir):
 
     config = pman.get_config()
     assert config['blend2bam']['material_mode'] == 'pbr'
+
+def test_conf_missing(projectdir):
+    config = pman.get_config()
+    assert config['python']

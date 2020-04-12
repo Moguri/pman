@@ -1,4 +1,3 @@
-import collections
 import fnmatch
 import os
 import pprint
@@ -155,14 +154,6 @@ def create_blender(projectdir, config):
         if 'converters' not in project_layer['build']:
             project_layer['build']['converters'] = []
         project_layer['build']['converters'].append('blend2bam')
-
-    if 'blender' not in config:
-        user_layer = config.layers['user']
-        user_layer['blender'] = collections.OrderedDict([
-            ('last_path', 'blender'),
-            ('use_last_path', True),
-        ])
-
 
     config.write()
 

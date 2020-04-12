@@ -30,6 +30,10 @@ class ConfigDict:
             ('path', ''),
             ('in_venv', False),
         ])),
+        ('blender', collections.OrderedDict([
+            ('last_path', 'blender'),
+            ('use_last_path', True),
+        ])),
         ('blend2bam', collections.OrderedDict([
             ('material_mode', 'legacy'),
             ('physics_engine', 'builtin'),
