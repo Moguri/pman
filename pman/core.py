@@ -30,9 +30,13 @@ def get_config(startdir=None):
             pyprog = get_python_program()
             pyloc = shutil.which(pyprog)
             user_layer['python']['path'] = pyloc
-
-            activate_this_loc = os.path.join(os.path.dirname(pyloc), 'activate_this.py')
-            user_layer['python']['in_venv'] = os.path.exists(activate_this_loc)
+            venv_check_args = [
+                pyprog,
+                '-c',
+                'import sys, pman; sys.exit(0 if pman.in_venv() else 1)'
+            ]
+            retcode = subprocess.call(venv_check_args, stderr=subprocess.DEVNULL)
+            user_layer['python']['in_venv'] = retcode == 0
 
             config.write()
         except CouldNotFindPythonError:
@@ -171,11 +175,10 @@ def get_python_program(config=None):
             '-c',
             'import panda3d.core; import direct',
         ]
-        with open(os.devnull, 'w') as f:
-            try:
-                retcode = subprocess.call(args, stderr=f)
-            except FileNotFoundError:
-                retcode = 1
+        try:
+            retcode = subprocess.call(args, stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            retcode = 1
 
         if retcode == 0:
             return pyprog
@@ -193,14 +196,9 @@ def in_venv():
 
 def run_program(config, args, use_venv=True, cwd=None):
     if use_venv and config['python']['in_venv']:
-        actv_this_loc = os.path.join(
-            os.path.dirname(config['python']['path']),
-            'activate_this.py'
-        )
         args = [
             'python',
             os.path.join(os.path.dirname(__file__), 'venvwrapper.py'),
-            actv_this_loc,
         ] + args
     subprocess.call(args, cwd=cwd)
 
