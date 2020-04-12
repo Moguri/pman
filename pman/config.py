@@ -1,4 +1,3 @@
-import collections
 import functools
 import os
 
@@ -9,38 +8,38 @@ from .exceptions import NoConfigError
 class ConfigDict:
     '''Extend ChainMap to provide a config object with overlays'''
 
-    _CONFIG_DEFAULTS = collections.OrderedDict([
-        ('general', collections.OrderedDict([
-            ('name', 'Game'),
-            ('renderer', 'none'),
-        ])),
-        ('build', collections.OrderedDict([
-            ('asset_dir', 'assets/'),
-            ('export_dir', '.built_assets/'),
-            ('ignore_patterns', []),
-            ('converters', ['native2bam']),
-        ])),
-        ('run', collections.OrderedDict([
-            ('main_file', 'main.py'),
-            ('extra_args', ''),
-            ('auto_build', True),
-            ('auto_save', True),
-        ])),
-        ('python', collections.OrderedDict([
-            ('path', ''),
-            ('in_venv', False),
-        ])),
-        ('blender', collections.OrderedDict([
-            ('last_path', 'blender'),
-            ('use_last_path', True),
-        ])),
-        ('blend2bam', collections.OrderedDict([
-            ('material_mode', 'legacy'),
-            ('physics_engine', 'builtin'),
-            ('pipeline', 'gltf'),
-            ('overrides', []),
-        ])),
-    ])
+    _CONFIG_DEFAULTS = {
+        'general': {
+            'name': 'Game',
+            'renderer': 'none',
+        },
+        'build': {
+            'asset_dir': 'assets/',
+            'export_dir': '.built_assets/',
+            'ignore_patterns': [],
+            'converters': ['native2bam'],
+        },
+        'run': {
+            'main_file': 'main.py',
+            'extra_args': '',
+            'auto_build': True,
+            'auto_save': True,
+        },
+        'python': {
+            'path': '',
+            'in_venv': False,
+        },
+        'blender': {
+            'last_path': 'blender',
+            'use_last_path': True,
+        },
+        'blend2bam': {
+            'material_mode': 'legacy',
+            'physics_engine': 'builtin',
+            'pipeline': 'gltf',
+            'overrides': [],
+        },
+    }
 
     PROJECT_CONFIG_NAME = '.pman'
     USER_CONFIG_NAME = '{}.user'.format(PROJECT_CONFIG_NAME)
@@ -50,16 +49,16 @@ class ConfigDict:
         user_conf = {}
         if os.path.exists(user_conf_file):
             user_conf = toml.load(user_conf_file)
-        self.layers = collections.OrderedDict([
-            ('default', self._CONFIG_DEFAULTS),
-            ('project', project_conf),
-            ('user', user_conf),
-            ('internal', {
+        self.layers = {
+            'default': self._CONFIG_DEFAULTS,
+            'project': project_conf,
+            'user': user_conf,
+            'internal': {
                 'internal': {
                     'projectdir': os.path.dirname(project_conf_file),
                 },
-            }),
-        ])
+            },
+        }
 
         self._update_conf()
 
