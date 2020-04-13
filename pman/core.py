@@ -1,6 +1,5 @@
 import fnmatch
 import functools
-import importlib.machinery
 import os
 import shlex
 import shutil
@@ -80,7 +79,7 @@ def ensure_config(func):
 
 
 def is_frozen():
-    return isinstance(__spec__, importlib.machinery.FrozenImporter)
+    return getattr(sys, frozen, False)
 
 def disallow_frozen(func):
     @functools.wraps(func)
