@@ -86,7 +86,7 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
 
         print("Calling blend2bam: {}".format(' '.join(args)))
 
-        subprocess.call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
+        subprocess.check_call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
 
 @Converter([
     '.egg.pz', '.egg',
