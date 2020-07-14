@@ -303,12 +303,13 @@ def build(config=None):
                 dst = src.replace(srcdir, dstdir)
 
                 ignore_pattern = None
+                asset_path = src.replace(srcdir, '')
                 for pattern in ignore_patterns:
-                    if fnmatch.fnmatch(asset, pattern):
+                    if fnmatch.fnmatch(asset_path, pattern) or fnmatch.fnmatch(asset, pattern):
                         ignore_pattern = pattern
                         break
                 if ignore_pattern is not None:
-                    print('Skip building file {} that matched ignore pattern {}'.format(asset, ignore_pattern))
+                    print('Skip building file {} that matched ignore pattern {}'.format(asset_path, ignore_pattern))
                     continue
 
                 ext = '.' + asset.split('.', 1)[1]
