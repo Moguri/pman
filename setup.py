@@ -21,7 +21,7 @@ setup(
         'pytest-pylint',
     ],
     install_requires=[
-        'panda3d-blend2bam >=0.5.1',
+        'panda3d-blend2bam >=0.14',
     ],
     entry_points={
         'console_scripts': [

@@ -63,7 +63,7 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
     for run in runs:
         args = [
             'blend2bam',
-            '--srcdir', srcdir,
+            '--srcdir', f'"{srcdir}"',
             '--material-mode', run['material_mode'],
             '--physics-engine', run['physics_engine'],
         ]
@@ -77,11 +77,11 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
         if config['blender']['use_last_path']:
             blenderdir = os.path.dirname(config['blender']['last_path'])
             args += [
-                '--blender-dir', blenderdir,
+                '--blender-dir', f'"{blenderdir}"',
             ]
-        args += run['files']
+        args += [f'"{i}"' for i in run['files']]
         args += [
-            dstdir
+            f'"{dstdir}"'
         ]
 
         print("Calling blend2bam: {}".format(' '.join(args)))
