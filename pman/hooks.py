@@ -66,13 +66,8 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             '--srcdir', f'"{srcdir}"',
             '--material-mode', run['material_mode'],
             '--physics-engine', run['physics_engine'],
+            '--pipeline', run['pipeline'],
         ]
-
-        _, minorver = [int(i) for i in getattr(blend2bam, '__version__', '0.6').split('.')]
-        if minorver >= 7:
-            args += [
-                '--pipeline', run['pipeline'],
-            ]
 
         if config['blender']['use_last_path']:
             blenderdir = os.path.dirname(config['blender']['last_path'])
