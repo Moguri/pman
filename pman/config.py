@@ -34,7 +34,7 @@ class ConfigDict:
             'use_last_path': True,
         },
         'blend2bam': {
-            'material_mode': 'legacy',
+            'material_mode': 'pbr',
             'physics_engine': 'builtin',
             'pipeline': 'gltf',
             'overrides': [],
