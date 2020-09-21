@@ -2,6 +2,7 @@ import fnmatch
 import os
 import pprint
 import subprocess
+import sys
 
 from . import creationutils
 
@@ -62,7 +63,8 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
 
     for run in runs:
         args = [
-            'blend2bam',
+            sys.executable,
+            '-m', 'blend2bam',
             '--srcdir', f'"{srcdir}"',
             '--material-mode', run['material_mode'],
             '--physics-engine', run['physics_engine'],
