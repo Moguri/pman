@@ -38,7 +38,7 @@ def get_config(startdir=None):
             retcode = subprocess.call(venv_check_args, stderr=subprocess.DEVNULL)
             user_layer['python']['in_venv'] = retcode == 0
 
-            config.write()
+            config.write_user()
         except CouldNotFindPythonError:
             pass
 
