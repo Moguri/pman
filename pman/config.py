@@ -133,6 +133,9 @@ class ConfigDict:
         with open(project_conf_name, 'w') as project_conf_file:
             toml.dump(self.layers['project'], project_conf_file)
 
+        self.write_user()
+
+    def write_user(self):
         user_conf_name = os.path.join(self['internal']['projectdir'], self.USER_CONFIG_NAME)
         with open(user_conf_name, 'w') as user_conf_file:
             toml.dump(self.layers['user'], user_conf_file)
