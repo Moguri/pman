@@ -136,32 +136,3 @@ def create_git(projectdir, config):
     if add_export_dir:
         with open(gitignorepath, 'a') as gitignorefile:
             gitignorefile.write(config['build']['export_dir'])
-
-def create_blender(projectdir, config):
-    # Update config
-    ignore_patterns = ['*.blend1', '*.blend2']
-    for pattern in ignore_patterns:
-        if pattern not in config['build']['ignore_patterns']:
-            config['build']['ignore_patterns'].append(pattern)
-
-    if 'blend2bam' not in config['build']['converters']:
-        project_layer = config.layers['project']
-        if 'build' not in project_layer:
-            project_layer['build'] = {}
-        if 'converters' not in project_layer['build']:
-            project_layer['build']['converters'] = []
-        project_layer['build']['converters'].append('blend2bam')
-
-    config.write()
-
-    # Update requirements.txt
-    add_blend2bam_req = True
-    reqpath = os.path.join(projectdir, 'requirements.txt')
-    with open(reqpath, 'r') as reqfile:
-        for line in reqfile.readlines():
-            if line.startswith('panda3d-blend2bam'):
-                add_blend2bam_req = False
-
-    if add_blend2bam_req:
-        with open(reqpath, 'a') as reqfile:
-            reqfile.write('panda3d-blend2bam')

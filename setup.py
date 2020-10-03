@@ -38,7 +38,6 @@ setup(
         ],
         'pman.creation_extras': [
             'git = pman.hooks:create_git',
-            'blender = pman.hooks:create_blender',
         ],
     },
 )

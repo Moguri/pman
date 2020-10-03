@@ -16,8 +16,8 @@ class ConfigDict:
         'build': {
             'asset_dir': 'assets/',
             'export_dir': '.built_assets/',
-            'ignore_patterns': [],
-            'converters': ['native2bam'],
+            'ignore_patterns': ['*.blend1', '*.blend2'],
+            'converters': ['native2bam', 'blend2bam'],
         },
         'run': {
             'main_file': 'main.py',
