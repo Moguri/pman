@@ -29,11 +29,8 @@ class ConfigDict:
             'path': '',
             'in_venv': False,
         },
-        'blender': {
-            'last_path': 'blender',
-            'use_last_path': True,
-        },
         'blend2bam': {
+            'blender_dir': '',
             'material_mode': 'pbr',
             'physics_engine': 'builtin',
             'pipeline': 'gltf',

@@ -71,8 +71,8 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             '--pipeline', run['pipeline'],
         ]
 
-        if config['blender']['use_last_path']:
-            blenderdir = os.path.dirname(config['blender']['last_path'])
+        blenderdir = config['blend2bam']['blender_dir']
+        if blenderdir:
             args += [
                 '--blender-dir', f'"{blenderdir}"',
             ]
