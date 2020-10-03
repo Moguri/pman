@@ -32,10 +32,6 @@ setup(
             'blend2bam = pman.hooks:converter_blend_bam',
             'native2bam = pman.hooks:converter_native_bam',
         ],
-        'pman.renderers': [
-            'basic = pman.basicrenderer:BasicRenderer',
-            'none = pman.nullrenderer:NullRenderer',
-        ],
         'pman.creation_extras': [
             'git = pman.hooks:create_git',
         ],

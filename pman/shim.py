@@ -3,7 +3,7 @@ import panda3d.core as p3d
 from . import core as pman
 
 
-def init(base):
+def init(_base):
     assetdir_rel = p3d.Filename('assets')
     config = None
 
@@ -16,6 +16,3 @@ def init(base):
     # Add assets directory to model path
     assetdir = p3d.Filename(p3d.Filename.expand_from('$MAIN_DIR'), assetdir_rel)
     p3d.get_model_path().prepend_directory(assetdir)
-
-    # Setup renderer
-    pman.create_renderer(base, config)

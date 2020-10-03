@@ -65,7 +65,6 @@ Section name: `general`
 |option|default|description|
 |---|---|---|
 |name|`"Game"`|The project name. For now this is only used for naming the built application in the default `setup.py`.|
-|renderer|`"none"`|A hook to control rendering options. This is useful to share rendering logic (e.g., shaders) between an editor and an application.|
 
 ### Build Options
 Section name: `build`
@@ -88,7 +87,10 @@ Section name: `run`
 
 ## Hooks
 
-To extend functionallity, pman has supports for "hooks." There are currently hooks available for conversion (converters) and controlling rendering (renderers). These hooks are specified in config via [Setuptools entry points](https://packaging.python.org/specifications/entry-points/). Hooks that ship with pman and their configuration options are discribed below.
+To extend functionality, pman has supports for "hooks."
+There are currently hooks available for conversion (converters) and project creation (creation extras).
+These hooks are specified in config via [Setuptools entry points](https://packaging.python.org/specifications/entry-points/).
+Hooks that ship with pman and their configuration options are described below.
 
 ### Converters
 

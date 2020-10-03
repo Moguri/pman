@@ -29,7 +29,9 @@ def test_conf_override(projectdir):
     project_layer = config.layers['project']
     project_layer['general'] = {
         'name': 'projectname',
-        'renderer': 'basic',
+    }
+    project_layer['build'] = {
+        'export_dir': 'assets',
     }
     assert config['general']['name'] == 'projectname'
 
@@ -44,7 +46,7 @@ def test_conf_override(projectdir):
     assert config['build']['asset_dir'] == config_defaults['build']['asset_dir']
 
     # Check that non-overridden project settings are still intact
-    assert config['general']['renderer'] == 'basic'
+    assert config['build']['export_dir'] == 'assets'
 
 def test_conversion(projectdir):
     config = pman.get_config()

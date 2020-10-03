@@ -15,13 +15,6 @@ def test_build(projectdir):
     pman.build()
 
 
-def test_create_renderer(projectdir):
-    conf = pman.get_config()
-    conf['general']['renderer'] = 'none'
-    pman.build()
-    pman.create_renderer(None, conf)
-
-
 def test_venv_detect(projectdir):
     user_confg = pman.get_user_config()
     assert user_confg['python']['in_venv']
@@ -69,6 +62,4 @@ def test_run_args(projectdir):
         assert tmpfile.read() == "['--test', 'hello world']"
 
 def test_shim(projectdir):
-    config = pman.get_config()
-    config['general']['renderer'] = 'none'
     pman.shim.init(None)

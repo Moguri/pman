@@ -9,7 +9,7 @@ import time
 
 
 from . import creationutils
-from .exceptions import CouldNotFindPythonError, BuildError, FrozenEnvironmentError, NoConfigError
+from .exceptions import CouldNotFindPythonError, FrozenEnvironmentError, NoConfigError
 from .config import ConfigDict
 
 
@@ -210,28 +210,6 @@ def run_script(config, args, use_venv=True, cwd=None):
     run_program(config, [pyprog] + args, use_venv=use_venv, cwd=cwd)
 
 
-def create_renderer(base, config=None):
-    if not is_frozen():
-        if config is None:
-            config = get_config()
-        sys.path.append(get_abs_path(config, config['build']['export_dir']))
-    import pman_renderer #pylint: disable=import-error
-    return pman_renderer.get_renderer()(base)
-
-
-_RENDER_STUB = """
-import functools
-def get_renderer():
-    modname = '{}'
-    attrs = {}
-    module =  __import__(modname, fromlist=['__name__'], level=0)
-    return functools.reduce(getattr, attrs, module)
-"""
-
-
-RENDER_STUB_NAME = 'pman_renderer.py'
-
-
 def converter_copy(_config, srcdir, dstdir, assets):
     for asset in assets:
         src = asset
@@ -267,25 +245,6 @@ def build(config=None):
     if not os.path.exists(dstdir):
         print("Creating asset export directory at {}".format(dstdir))
         os.makedirs(dstdir)
-
-    # Write out stub importer so we do not need pkg_resources at runtime
-    renderername = config['general']['renderer']
-
-    if not renderername:
-        renderername = config.layers['default']['general']['renderer']
-    for entry_point in pkg_resources.iter_entry_points('pman.renderers'):
-        if entry_point.name == renderername:
-            renderer_entry_point = entry_point
-            break
-    else:
-        raise BuildError('Could not find renderer for {0}'.format(renderername))
-    renderer_stub_path = os.path.join(dstdir, RENDER_STUB_NAME)
-    print('Writing renderer stub to {}'.format(renderer_stub_path))
-    with open(renderer_stub_path, 'w') as renderer_stub_file:
-        renderer_stub_file.write(_RENDER_STUB.format(
-            renderer_entry_point.module_name,
-            repr(renderer_entry_point.attrs)
-        ))
 
     if os.path.exists(srcdir) and os.path.isdir(srcdir):
         # Gather files and group by extension
