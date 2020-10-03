@@ -25,8 +25,6 @@ class Converter(object):
 
 @Converter(['.blend'])
 def converter_blend_bam(config, srcdir, dstdir, assets):
-    import blend2bam
-
     remaining_assets = set(assets)
 
     default_mat_mode = config['blend2bam']['material_mode']

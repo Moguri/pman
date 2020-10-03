@@ -59,7 +59,7 @@ def test_conversion(projectdir):
 def test_conf_missing(projectdir):
     config = pman.get_config()
     assert config['python']
-    assert config['blender']
+    assert config['blend2bam']
 
 
 PROJECT_CONF_DATA = '''
