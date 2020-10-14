@@ -26,7 +26,6 @@ class ConfigDict:
         },
         'python': {
             'path': '',
-            'in_venv': False,
         },
         'blend2bam': {
             'blender_dir': '',

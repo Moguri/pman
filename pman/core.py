@@ -30,14 +30,6 @@ def get_config(startdir=None):
             pyprog = get_python_program()
             pyloc = shutil.which(pyprog)
             user_layer['python']['path'] = pyloc
-            venv_check_args = [
-                pyprog,
-                '-c',
-                'import sys, pman; sys.exit(0 if pman.in_venv() else 1)'
-            ]
-            retcode = subprocess.call(venv_check_args, stderr=subprocess.DEVNULL)
-            user_layer['python']['in_venv'] = retcode == 0
-
             config.write_user()
         except CouldNotFindPythonError:
             pass
@@ -187,27 +179,13 @@ def get_python_program(config=None):
     raise CouldNotFindPythonError('Could not find a Python version with Panda3D installed')
 
 
-def in_venv():
-    return (
-        hasattr(sys, 'real_prefix') or
-        (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-    )
-
-
-def run_program(config, args, use_venv=True, cwd=None):
-    if use_venv and config['python']['in_venv']:
-        args = [
-            'python',
-            os.path.join(os.path.dirname(__file__), 'venvwrapper.py'),
-        ] + args
+def run_program(_config, args, cwd=None):
     subprocess.call(args, cwd=cwd)
 
-def run_script(config, args, use_venv=True, cwd=None):
-    if use_venv and config['python']['in_venv']:
-        pyprog = 'python'
-    else:
-        pyprog = get_python_program(config)
-    run_program(config, [pyprog] + args, use_venv=use_venv, cwd=cwd)
+
+def run_script(config, args, cwd=None):
+    pyprog = get_python_program(config)
+    run_program(config, [pyprog] + args, cwd=cwd)
 
 
 def converter_copy(_config, srcdir, dstdir, assets):
