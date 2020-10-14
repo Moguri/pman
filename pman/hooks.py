@@ -39,7 +39,11 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
 
     for override in config['blend2bam']['overrides']:
         files = {
-            i for i in assets if fnmatch.fnmatchcase(i, override['pattern'])
+            i for i in assets
+            if (
+                fnmatch.fnmatchcase(i, override['pattern'])
+                or fnmatch.fnmatchcase(os.path.basename(i), override['pattern'])
+            )
         }
 
         if not files:
