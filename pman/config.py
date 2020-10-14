@@ -32,6 +32,7 @@ class ConfigDict:
             'material_mode': 'pbr',
             'physics_engine': 'builtin',
             'pipeline': 'gltf',
+            'animations': 'embed',
             'overrides': [],
         },
     }

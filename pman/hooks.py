@@ -25,11 +25,16 @@ class Converter(object):
 
 @Converter(['.blend'])
 def converter_blend_bam(config, srcdir, dstdir, assets):
+    import blend2bam
+
+    blend2bam_version = [int(i) for i in blend2bam.__version__.split('.')]
+
     remaining_assets = set(assets)
 
     default_mat_mode = config['blend2bam']['material_mode']
     default_phy_engine = config['blend2bam']['physics_engine']
     default_pipeline = config['blend2bam']['pipeline']
+    default_animations = config['blend2bam']['animations']
     runs = []
 
     for override in config['blend2bam']['overrides']:
@@ -45,6 +50,7 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             'material_mode': override.get('material_mode', default_mat_mode),
             'physics_engine': override.get('physics_engine', default_phy_engine),
             'pipeline': override.get('pipeline', default_pipeline),
+            'animations': override.get('animations', default_animations),
         })
         print('blend2bam: Using the following override\n{}'.format(
             pprint.pformat(runs[-1])
@@ -56,6 +62,7 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
         'material_mode': default_mat_mode,
         'physics_engine': default_phy_engine,
         'pipeline': default_pipeline,
+        'animations': default_animations,
     })
 
 
@@ -68,6 +75,16 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             '--physics-engine', run['physics_engine'],
             '--pipeline', run['pipeline'],
         ]
+
+        if blend2bam_version[0] != 0 or blend2bam_version[1] >= 17:
+            args += [
+                '--animations', run['animations']
+            ]
+        elif run['animations'] != default_animations:
+            raise RuntimeError(
+                'blend2bam >= 0.17 is required for animations values other'
+                f' than "{default_animations}"'
+            )
 
         blenderdir = config['blend2bam']['blender_dir']
         if blenderdir:
