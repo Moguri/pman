@@ -188,11 +188,10 @@ def run_script(config, args, cwd=None):
     run_program(config, [pyprog] + args, cwd=cwd)
 
 
-def converter_copy(_config, srcdir, dstdir, assets):
+def converter_copy(config, srcdir, dstdir, assets):
     for asset in assets:
         src = asset
         dst = src.replace(srcdir, dstdir)
-        # print(f'Copying file from "{src}" to "{dst}"')
         if not os.path.exists(os.path.dirname(dst)):
             os.makedirs(os.path.dirname(dst))
         shutil.copyfile(src, dst)
@@ -201,6 +200,7 @@ def converter_copy(_config, srcdir, dstdir, assets):
 @ensure_config
 @disallow_frozen
 def build(config=None):
+    verbose = config['general']['verbose']
     import pkg_resources
     converters = [
         entry_point.load()
@@ -214,11 +214,14 @@ def build(config=None):
     srcdir = get_abs_path(config, config['build']['asset_dir'])
     dstdir = get_abs_path(config, config['build']['export_dir'])
 
-    print(f'Read assets from: {srcdir}')
-    print(f'Export them to: {dstdir}')
+    if verbose:
+        print(f'Read assets from: {srcdir}')
+        print(f'Export them to: {dstdir}')
 
     ignore_patterns = config['build']['ignore_patterns']
-    print(f'Ignoring file patterns: {ignore_patterns}')
+
+    if verbose:
+        print(f'Ignoring file patterns: {ignore_patterns}')
 
     if not os.path.exists(dstdir):
         print(f'Creating asset export directory at {dstdir}')
@@ -246,10 +249,11 @@ def build(config=None):
                         ignore_pattern = pattern
                         break
                 if ignore_pattern is not None:
-                    print(
-                        f'Skip building file {asset_path} that '
-                        f'matched ignore pattern {ignore_pattern}'
-                    )
+                    if verbose:
+                        print(
+                            f'Skip building file {asset_path} that '
+                            f'matched ignore pattern {ignore_pattern}'
+                        )
                     continue
 
                 ext = '.' + asset.split('.', 1)[1]
@@ -258,13 +262,13 @@ def build(config=None):
                     dst = dst.replace(ext, ext_dst_map[ext])
 
                 if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
-                    print(f'Skip building up-to-date file: {dst}')
+                    if verbose:
+                        print(f'Skip building up-to-date file: {dst}')
                     continue
 
                 if ext not in ext_asset_map:
                     ext_asset_map[ext] = []
 
-                print(f'Adding {src} to conversion list to satisfy {dst}')
                 ext_asset_map[ext].append(os.path.join(root, asset))
 
         # Find which extensions have hooks available
@@ -275,11 +279,23 @@ def build(config=None):
                 del ext_asset_map[ext]
 
         # Copy what is left
+        copying_fnames = [
+            fname
+            for fname_list in ext_asset_map.values()
+            for fname in fname_list
+        ]
+        if copying_fnames:
+            print('Copying files:')
+            for fname in copying_fnames:
+                print(f'\t{fname}')
         for ext in ext_asset_map:
             converter_copy(config, srcdir, dstdir, ext_asset_map[ext])
 
         # Now run hooks that non-converted assets are in place (copied)
         for convert_hook in convert_hooks:
+            print('Converting files:')
+            for fname in convert_hook[1]:
+                print(f'\t{fname}')
             convert_hook[0](config, srcdir, dstdir, convert_hook[1])
     else:
         print(f'warning: could not find asset directory: {srcdir}')

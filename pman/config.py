@@ -11,6 +11,7 @@ class ConfigDict:
     _CONFIG_DEFAULTS = {
         'general': {
             'name': 'Game',
+            'verbose': False,
         },
         'build': {
             'asset_dir': 'assets/',

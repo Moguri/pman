@@ -27,6 +27,8 @@ class Converter(object):
 def converter_blend_bam(config, srcdir, dstdir, assets):
     import blend2bam
 
+    verbose = config['general']['verbose']
+
     blend2bam_version = [int(i) for i in blend2bam.__version__.split('.')]
 
     remaining_assets = set(assets)
@@ -56,9 +58,10 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             'pipeline': override.get('pipeline', default_pipeline),
             'animations': override.get('animations', default_animations),
         })
-        print('blend2bam: Using the following override\n{}'.format(
-            pprint.pformat(runs[-1])
-        ))
+        if verbose:
+            print('blend2bam: Using the following override\n{}'.format(
+                pprint.pformat(runs[-1])
+            ))
         remaining_assets -= files
 
     runs.append({
@@ -100,7 +103,8 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             f'"{dstdir}"'
         ]
 
-        print(f'Calling blend2bam: {" ".join(args)}')
+        if verbose:
+            print(f'Calling blend2bam: {" ".join(args)}')
 
         subprocess.check_call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
 
@@ -110,7 +114,8 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
     '.fbx', '.dae',
     '.ply',
 ])
-def converter_native_bam(_config, srcdir, dstdir, assets):
+def converter_native_bam(config, srcdir, dstdir, assets):
+    verbose = config['general']['verbose']
     processes = []
     for asset in assets:
         if asset.endswith('.mtl'):
@@ -125,7 +130,8 @@ def converter_native_bam(_config, srcdir, dstdir, assets):
             dst
         ]
 
-        print(f'Calling native2bam: {" ".join(args)}')
+        if verbose:
+            print(f'Calling native2bam: {" ".join(args)}')
         processes.append(subprocess.Popen(args, env=os.environ.copy(), stdout=subprocess.DEVNULL))
 
     for proc in processes:

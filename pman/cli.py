@@ -6,35 +6,33 @@ import sys
 import pman
 
 
-def create(args):
+def create(args, _config):
     pman.create_project(args.dirname, args.extras)
 
 
-def update(args):
-    config = pman.get_config()
+def update(args, config):
     pman.create_project(config['internal']['projectdir'], args.extras)
 
 
-def build(_):
-    pman.build()
+def build(_, config):
+    pman.build(config)
 
 
-def run(_):
-    pman.run()
+def run(_, config):
+    pman.run(config)
 
 
-def test(_):
-    config = pman.get_config()
+def test(_, config):
     args = [
-        pman.get_python_program(),
+        pman.get_python_program(config),
         'setup.py',
         'test',
     ]
     sys.exit(subprocess.call(args, cwd=config['internal']['projectdir']))
 
 
-def dist(args):
-    pman.get_python_program()
+def dist(args, config):
+    pman.get_python_program(config)
 
     try:
         import direct.dist.commands #pylint:disable=unused-import,unused-variable
@@ -45,11 +43,11 @@ def dist(args):
     platforms = args.platforms
     if platforms is not None:
         platforms = list(platforms)
-    pman.dist(build_installers=not args.skip_installers, platforms=platforms)
+    pman.dist(config, build_installers=not args.skip_installers, platforms=platforms)
 
 
-def clean(_):
-    pman.clean()
+def clean(_, config):
+    pman.clean(config)
 
 
 def main():
@@ -60,6 +58,12 @@ def main():
         '--version',
         action='version',
         version=f'%(prog)s {pman.__version__}',
+    )
+
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='enable verbose prints',
     )
 
     subparsers = parser.add_subparsers(
@@ -145,7 +149,9 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    args.func(args)
+    config = pman.get_config()
+    config['general']['verbose'] = args.verbose or config['general']['verbose']
+    args.func(args, config)
 
 
 if __name__ == '__main__':
