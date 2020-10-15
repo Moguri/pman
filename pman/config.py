@@ -38,7 +38,7 @@ class ConfigDict:
     }
 
     PROJECT_CONFIG_NAME = '.pman'
-    USER_CONFIG_NAME = '{}.user'.format(PROJECT_CONFIG_NAME)
+    USER_CONFIG_NAME = f'{PROJECT_CONFIG_NAME}.user'
 
     def __init__(self, project_conf_file, user_conf_file):
         project_conf = toml.load(project_conf_file)

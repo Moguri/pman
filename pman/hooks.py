@@ -100,7 +100,7 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             f'"{dstdir}"'
         ]
 
-        print("Calling blend2bam: {}".format(' '.join(args)))
+        print(f'Calling blend2bam: {" ".join(args)}')
 
         subprocess.check_call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
 
@@ -125,7 +125,7 @@ def converter_native_bam(_config, srcdir, dstdir, assets):
             dst
         ]
 
-        # print("Calling native2bam: {}".format(' '.join(args)))
+        print(f'Calling native2bam: {" ".join(args)}')
         processes.append(subprocess.Popen(args, env=os.environ.copy(), stdout=subprocess.DEVNULL))
 
     for proc in processes:

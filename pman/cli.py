@@ -59,7 +59,7 @@ def main():
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s {version}'.format(version=pman.__version__),
+        version=f'%(prog)s {pman.__version__}',
     )
 
     subparsers = parser.add_subparsers(

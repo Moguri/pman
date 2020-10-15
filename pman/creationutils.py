@@ -7,9 +7,9 @@ def create_dirs(projectdir, dirs):
 
     for d in dirs:
         if os.path.exists(d):
-            print("\tSkipping existing directory: {}".format(d))
+            print(f'\tSkipping existing directory: {d}')
         else:
-            print("\tCreating directory: {}".format(d))
+            print(f'\tCreating directory: {d}')
             os.mkdir(d)
 
 
@@ -22,9 +22,9 @@ def copy_template_files(projectdir, templatedir, templatefiles):
     for tmplfile in templatefiles:
         src = os.path.join(templatedir, tmplfile[0])
         dst = os.path.join(projectdir, tmplfile[1])
-        print("Creating {}".format(dst))
+        print(f'Creating {dst}')
         if os.path.exists(dst):
-            print("\t{} already exists, skipping".format(dst))
+            print(f'\t{dst} already exists, skipping')
         else:
             shutil.copyfile(src, dst)
-            print("\t{} copied to {}".format(src, dst))
+            print(f'\t{src} copied to {dst}')

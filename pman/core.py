@@ -94,9 +94,9 @@ def create_project(projectdir='.', extras=None):
 
     confpath = os.path.join(projectdir, '.pman')
     if os.path.exists(confpath):
-        print("Updating project in {}".format(projectdir))
+        print(f'Updating project in {projectdir}')
     else:
-        print("Creating new project in {}".format(projectdir))
+        print(f'Creating new project in {projectdir}')
 
     if not os.path.exists(confpath):
         # Touch config file to make sure it is present
@@ -130,7 +130,7 @@ def create_project(projectdir='.', extras=None):
         }
         for extra in extras:
             if extra not in entrypoints:
-                print('Could not find creation extra: {}'.format(extra))
+                print(f'Could not find creation extra: {extra}')
                 continue
             entrypoints[extra](projectdir, config)
 
@@ -192,7 +192,7 @@ def converter_copy(_config, srcdir, dstdir, assets):
     for asset in assets:
         src = asset
         dst = src.replace(srcdir, dstdir)
-        # print('Copying file from "{}" to "{}"'.format(src, dst))
+        # print(f'Copying file from "{src}" to "{dst}"')
         if not os.path.exists(os.path.dirname(dst)):
             os.makedirs(os.path.dirname(dst))
         shutil.copyfile(src, dst)
@@ -209,19 +209,19 @@ def build(config=None):
     ]
 
     stime = time.perf_counter()
-    print("Starting build")
+    print('Starting build')
 
     srcdir = get_abs_path(config, config['build']['asset_dir'])
     dstdir = get_abs_path(config, config['build']['export_dir'])
 
-    print("Read assets from: {}".format(srcdir))
-    print("Export them to: {}".format(dstdir))
+    print(f'Read assets from: {srcdir}')
+    print(f'Export them to: {dstdir}')
 
     ignore_patterns = config['build']['ignore_patterns']
-    print("Ignoring file patterns: {}".format(ignore_patterns))
+    print(f'Ignoring file patterns: {ignore_patterns}')
 
     if not os.path.exists(dstdir):
-        print("Creating asset export directory at {}".format(dstdir))
+        print(f'Creating asset export directory at {dstdir}')
         os.makedirs(dstdir)
 
     if os.path.exists(srcdir) and os.path.isdir(srcdir):
@@ -246,7 +246,10 @@ def build(config=None):
                         ignore_pattern = pattern
                         break
                 if ignore_pattern is not None:
-                    print('Skip building file {} that matched ignore pattern {}'.format(asset_path, ignore_pattern))
+                    print(
+                        f'Skip building file {asset_path} that '
+                        f'matched ignore pattern {ignore_pattern}'
+                    )
                     continue
 
                 ext = '.' + asset.split('.', 1)[1]
@@ -255,13 +258,13 @@ def build(config=None):
                     dst = dst.replace(ext, ext_dst_map[ext])
 
                 if os.path.exists(dst) and os.stat(src).st_mtime <= os.stat(dst).st_mtime:
-                    print('Skip building up-to-date file: {}'.format(dst))
+                    print(f'Skip building up-to-date file: {dst}')
                     continue
 
                 if ext not in ext_asset_map:
                     ext_asset_map[ext] = []
 
-                print('Adding {} to conversion list to satisfy {}'.format(src, dst))
+                print(f'Adding {src} to conversion list to satisfy {dst}')
                 ext_asset_map[ext].append(os.path.join(root, asset))
 
         # Find which extensions have hooks available
@@ -279,19 +282,18 @@ def build(config=None):
         for convert_hook in convert_hooks:
             convert_hook[0](config, srcdir, dstdir, convert_hook[1])
     else:
-        print("warning: could not find asset directory: {}".format(srcdir))
+        print(f'warning: could not find asset directory: {srcdir}')
 
 
-    print("Build took {:.4f}s".format(time.perf_counter() - stime))
+    print(f'Build took {time.perf_counter() - stime:.4f}s')
 
 
 @ensure_config
 @disallow_frozen
 def run(config=None):
     mainfile = get_abs_path(config, config['run']['main_file'])
-    print("Running main file: {}".format(mainfile))
+    print('Running main file: {mainfile}')
     args = [mainfile] + shlex.split(config['run']['extra_args'])
-    #print("Args: {}".format(args))
     run_script(config, args, cwd=config['internal']['projectdir'])
 
 
