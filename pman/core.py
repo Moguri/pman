@@ -308,7 +308,7 @@ def build(config=None):
 @disallow_frozen
 def run(config=None):
     mainfile = get_abs_path(config, config['run']['main_file'])
-    print('Running main file: {mainfile}')
+    print(f'Running main file: {mainfile}')
     args = [mainfile] + shlex.split(config['run']['extra_args'])
     run_script(config, args, cwd=config['internal']['projectdir'])
 
