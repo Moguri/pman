@@ -64,13 +64,14 @@ def converter_blend_bam(config, srcdir, dstdir, assets):
             ))
         remaining_assets -= files
 
-    runs.append({
-        'files': remaining_assets,
-        'material_mode': default_mat_mode,
-        'physics_engine': default_phy_engine,
-        'pipeline': default_pipeline,
-        'animations': default_animations,
-    })
+    if remaining_assets:
+        runs.append({
+            'files': remaining_assets,
+            'material_mode': default_mat_mode,
+            'physics_engine': default_phy_engine,
+            'pipeline': default_pipeline,
+            'animations': default_animations,
+        })
 
 
     for run in runs:
