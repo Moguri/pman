@@ -188,7 +188,7 @@ def run_script(config, args, cwd=None):
     run_program(config, [pyprog] + args, cwd=cwd)
 
 
-def converter_copy(config, srcdir, dstdir, assets):
+def converter_copy(_config, srcdir, dstdir, assets):
     for asset in assets:
         src = asset
         dst = src.replace(srcdir, dstdir)

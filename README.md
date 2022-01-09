@@ -118,6 +118,33 @@ Section name: `blend2bam`
 |physics_engine|`"builtin"`|The physics engine that collision solids should be built for. To export for Panda's builtin collision system, use "builtin." For Bullet, use "bullet." This is only used by the "gltf" pipeline; the "egg" pipeline always uses "builtin."|
 |pipeline|`"gltf"`|The backend that blend2bam uses to convert blend files. Go [here](https://github.com/Moguri/blend2bam#pipelines) for more information.|
 
+## Running Tests
+
+First install the project in editable mode along with `test` extras:
+
+```bash
+pip install -e .[test]
+```
+
+Then run the test suite with `pytest`:
+
+```bash
+pytest
+```
+
+## Building Wheels
+
+Install `build`:
+
+```bash
+pip install --upgrade build
+```
+
+and run:
+
+```bash
+python -m build
+```
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
