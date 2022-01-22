@@ -4,7 +4,7 @@ dist: xenial
 python:
   - '3.6'
   - '3.7'
-script: python -m pytest
+script: python -m pip install -e .[test] && python -m pytest
 before_deploy: python -m build
 deploy:
   - provider: pypi
