@@ -149,8 +149,11 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    config = pman.get_config()
-    config['general']['verbose'] = args.verbose or config['general']['verbose']
+    if pman.config_exists():
+        config = pman.get_config()
+        config['general']['verbose'] = args.verbose or config['general']['verbose']
+    else:
+        config = None
     args.func(args, config)
 
 
