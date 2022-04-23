@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Moguri/pman.svg?branch=master)](https://travis-ci.org/Moguri/pman)
+![Build Status](https://github.com/Moguri/panda3d-pman/workflows/Pipeline/badge.svg)
 [![](https://img.shields.io/pypi/pyversions/panda3d_pman.svg)](https://pypi.org/project/panda3d_pman/)
 [![Panda3D Versions](https://img.shields.io/badge/panda3d-1.9%2C%201.10-blue.svg)](https://www.panda3d.org/)
 [![](https://img.shields.io/github/license/Moguri/pman.svg)](https://choosealicense.com/licenses/mit/)
