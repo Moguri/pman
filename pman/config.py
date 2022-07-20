@@ -1,7 +1,7 @@
 import functools
 import os
+import tomli as toml
 
-from . import toml
 from .exceptions import NoConfigError
 
 
@@ -42,10 +42,12 @@ class ConfigDict:
     USER_CONFIG_NAME = f'{PROJECT_CONFIG_NAME}.user'
 
     def __init__(self, project_conf_file, user_conf_file):
-        project_conf = toml.load(project_conf_file)
+        with open(project_conf_file, 'rb') as conffile:
+            project_conf = toml.load(conffile)
         user_conf = {}
         if os.path.exists(user_conf_file):
-            user_conf = toml.load(user_conf_file)
+            with open(user_conf_file, 'rb') as conffile:
+                user_conf = toml.load(conffile)
         self.layers = {
             'default': self._CONFIG_DEFAULTS,
             'project': project_conf,
