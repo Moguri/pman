@@ -4,8 +4,6 @@ import pprint
 import subprocess
 import sys
 
-from . import creationutils
-
 class Converter(object):
     def __init__(self, supported_exts, ext_dst_map=None):
         self.supported_exts = supported_exts
@@ -137,28 +135,3 @@ def converter_native_bam(config, srcdir, dstdir, assets):
 
     for proc in processes:
         proc.wait()
-
-
-def create_git(projectdir, config):
-    if not os.path.exists(os.path.join(projectdir, '.git')):
-        args = [
-            'git',
-            'init',
-            '.'
-        ]
-        subprocess.call(args, env=os.environ.copy())
-
-    templatedir = creationutils.get_template_dir()
-    creationutils.copy_template_files(projectdir, templatedir, (
-        ('panda.gitignore', '.gitignore'),
-    ))
-
-    gitignorepath = os.path.join(projectdir, '.gitignore')
-    add_export_dir = False
-    with open(gitignorepath, 'r') as gitignorefile:
-        if config['build']['export_dir'] not in gitignorefile.readlines():
-            add_export_dir = True
-
-    if add_export_dir:
-        with open(gitignorepath, 'a') as gitignorefile:
-            gitignorefile.write(config['build']['export_dir'])
