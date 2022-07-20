@@ -299,6 +299,8 @@ def run(config=None):
 @ensure_config
 @disallow_frozen
 def dist(config=None, build_installers=True, platforms=None):
+    build(config)
+
     args = [
         'setup.py',
     ]
