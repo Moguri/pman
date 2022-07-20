@@ -32,7 +32,7 @@ def test_conf_override(projectdir):
     # Check default
     config = pman.get_config()
     assert config['run']['main_file'] == 'main.py'
-    assert config['general']['verbose'] == False
+    assert not config['general']['verbose']
 
     # Check that project overrides default
     assert config['build']['export_dir'] == 'assets'
