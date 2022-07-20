@@ -37,7 +37,7 @@ def test_run_args(projectdir):
     config = pman.get_config()
     config['run']['extra_args'] = "--test 'hello world'"
 
-    pman.run()
+    pman.run(config)
 
     with open('tmp', 'r') as tmpfile:
         assert tmpfile.read() == "['--test', 'hello world']"

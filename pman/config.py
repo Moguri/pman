@@ -1,3 +1,4 @@
+import collections
 import functools
 import os
 import tomli as toml
@@ -5,7 +6,16 @@ import tomli as toml
 from .exceptions import NoConfigError
 
 
-class ConfigDict:
+def _merge_dict(dst: dict, src: dict):
+    for key, value in src.items():
+        if isinstance(value, dict):
+            _merge_dict(dst.setdefault(key, {}), value)
+        else:
+            dst[key] = value
+
+    return dst
+
+class ConfigDict(collections.UserDict):
     '''Extend ChainMap to provide a config object with overlays'''
 
     _CONFIG_DEFAULTS = {
@@ -48,33 +58,17 @@ class ConfigDict:
         if os.path.exists(user_conf_file):
             with open(user_conf_file, 'rb') as conffile:
                 user_conf = toml.load(conffile)
-        self.layers = {
-            'default': self._CONFIG_DEFAULTS,
-            'project': project_conf,
-            'user': user_conf,
-            'internal': {
+        super().__init__(functools.reduce(_merge_dict, [
+            {},
+            self._CONFIG_DEFAULTS,
+            project_conf,
+            user_conf,
+            {
                 'internal': {
                     'projectdir': os.path.dirname(project_conf_file),
                 },
             },
-        }
-
-
-    def __getitem__(self, key):
-        def merge_dict(dicta, dictb):
-            dicta.update(dictb)
-            return dicta
-        return functools.reduce(merge_dict, [i.get(key, {}) for i in self.layers.values()])
-
-    def __setitem__(self, key, value):
-        self.layers[key] = value
-
-    def __contains__(self, item):
-        for layer in self.layers.values():
-            if item in layer:
-                return True
-
-        return False
+        ]))
 
     @classmethod
     def load(cls, startdir):

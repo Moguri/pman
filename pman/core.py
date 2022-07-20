@@ -15,13 +15,6 @@ from .config import ConfigDict
 
 def get_config(startdir=None):
     config = ConfigDict.load(startdir)
-    user_layer = config.layers['user']
-
-    if 'python' not in user_layer:
-        user_layer['python'] = {}
-
-    if 'path' not in user_layer['python']:
-        user_layer['python']['path'] = ''
 
     confpy = config['python']['path']
     if not confpy:
@@ -29,7 +22,7 @@ def get_config(startdir=None):
         try:
             pyprog = get_python_program()
             pyloc = shutil.which(pyprog)
-            user_layer['python']['path'] = pyloc
+            config['python']['path'] = pyloc
         except CouldNotFindPythonError:
             pass
 

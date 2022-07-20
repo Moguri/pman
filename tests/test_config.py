@@ -19,33 +19,27 @@ def test_conf_contains(projectdir):
 
 
 def test_conf_override(projectdir):
+    with open('.pman', 'a') as conffile:
+        conffile.write('[general]\n')
+        conffile.write('name = "projectname"\n')
+        conffile.write('[build]\n')
+        conffile.write('export_dir = "assets"\n')
+
+    with open('.pman.user', 'a') as conffile:
+        conffile.write('[general]\n')
+        conffile.write('name = "username"\n')
+
     # Check default
     config = pman.get_config()
-    config_defaults = config.layers['default']
-    assert config['general']['name'] == config_defaults['general']['name']
+    assert config['run']['main_file'] == 'main.py'
+    assert config['general']['verbose'] == False
 
     # Check that project overrides default
-    project_layer = config.layers['project']
-    project_layer['general'] = {
-        'name': 'projectname',
-    }
-    project_layer['build'] = {
-        'export_dir': 'assets',
-    }
-    assert config['general']['name'] == 'projectname'
+    assert config['build']['export_dir'] == 'assets'
 
     # Check that user overrides default
-    user_layer = config.layers['user']
-    user_layer['general'] = {
-        'name': 'username',
-    }
     assert config['general']['name'] == 'username'
 
-    # Check that non-overridden default settings are still intact
-    assert config['build']['asset_dir'] == config_defaults['build']['asset_dir']
-
-    # Check that non-overridden project settings are still intact
-    assert config['build']['export_dir'] == 'assets'
 
 def test_conf_missing(projectdir):
     config = pman.get_config()
