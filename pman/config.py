@@ -57,8 +57,6 @@ class ConfigDict:
             },
         }
 
-        self._update_conf()
-
 
     def __getitem__(self, key):
         def merge_dict(dicta, dictb):
@@ -75,27 +73,6 @@ class ConfigDict:
                 return True
 
         return False
-
-    def _update_conf(self):
-        '''Handle updating old configs or fields that change on load'''
-
-        confs = [
-            self.layers['project'],
-            self.layers['user'],
-        ]
-
-        for conf in confs:
-            if 'general' in conf:
-                blend2bam_dict = {}
-                if 'material_mode' in conf['general']:
-                    blend2bam_dict['material_mode'] = conf['general']['material_mode']
-                    del conf['general']['material_mode']
-                if 'physics_engine' in conf['general']:
-                    blend2bam_dict['physics_engine'] = conf['general']['physics_engine']
-                    del conf['general']['physics_engine']
-                if blend2bam_dict:
-                    conf['blend2bam'] = blend2bam_dict
-                    self.write()
 
     @classmethod
     def load(cls, startdir):
@@ -124,15 +101,3 @@ class ConfigDict:
 
         # No config found
         raise NoConfigError("Could not find config file")
-
-    def write(self):
-        project_conf_name = os.path.join(self['internal']['projectdir'], self.PROJECT_CONFIG_NAME)
-        with open(project_conf_name, 'w') as project_conf_file:
-            toml.dump(self.layers['project'], project_conf_file)
-
-        self.write_user()
-
-    def write_user(self):
-        user_conf_name = os.path.join(self['internal']['projectdir'], self.USER_CONFIG_NAME)
-        with open(user_conf_name, 'w') as user_conf_file:
-            toml.dump(self.layers['user'], user_conf_file)

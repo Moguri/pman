@@ -30,7 +30,6 @@ def get_config(startdir=None):
             pyprog = get_python_program()
             pyloc = shutil.which(pyprog)
             user_layer['python']['path'] = pyloc
-            config.write_user()
         except CouldNotFindPythonError:
             pass
 
@@ -50,15 +49,6 @@ def config_exists(startdir=None):
 def get_user_config(startdir=None):
     '''Compatibility alias, use get_config() instead'''
     return get_config(startdir)
-
-
-def write_config(config):
-    config.write()
-
-
-def write_user_config(user_config):
-    '''Compatibility alias, use write_config() instead'''
-    write_config(user_config)
 
 
 def ensure_config(func):

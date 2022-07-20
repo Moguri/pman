@@ -36,7 +36,6 @@ def test_run_args(projectdir):
 
     config = pman.get_config()
     config['run']['extra_args'] = "--test 'hello world'"
-    config.write()
 
     pman.run()
 

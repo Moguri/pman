@@ -5,11 +5,10 @@ import pman
 
 #pylint:disable=unused-argument
 
-def test_conf_read_write(tmpdir):
+def test_conf_read(tmpdir):
     os.chdir(tmpdir.strpath)
     open('.pman', 'w').close()
-    conf = pman.get_config()
-    pman.write_config(conf)
+    pman.get_config()
 
 
 def test_conf_contains(projectdir):
@@ -48,47 +47,7 @@ def test_conf_override(projectdir):
     # Check that non-overridden project settings are still intact
     assert config['build']['export_dir'] == 'assets'
 
-def test_conversion(projectdir):
-    config = pman.get_config()
-    config.layers['project']['general'] = {
-        'material_mode': 'pbr',
-    }
-    config.write()
-
-    config = pman.get_config()
-    assert config['blend2bam']['material_mode'] == 'pbr'
-
 def test_conf_missing(projectdir):
     config = pman.get_config()
     assert config['python']
     assert config['blend2bam']
-
-
-PROJECT_CONF_DATA = '''
-[run]
-auto_build = false
-
-[general]
-name = "GameName"
-'''.strip()
-
-EXPECTED_CONF_DATA = '''
-[run]
-auto_build = false
-main_file = "foo.py"
-
-[general]
-name = "GameName"
-'''.strip()
-def test_conf_order(projectdir):
-    confloc = pman.ConfigDict.PROJECT_CONFIG_NAME
-    with open(confloc, 'w') as conffile:
-        conffile.write(PROJECT_CONF_DATA)
-
-    config = pman.get_config()
-    config.layers['project']['run']['main_file'] = 'foo.py'
-    config.write()
-    with open(confloc) as conffile:
-        readdata = conffile.read().strip()
-
-    assert readdata == EXPECTED_CONF_DATA
