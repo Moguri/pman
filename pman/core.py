@@ -45,14 +45,17 @@ def get_user_config(startdir=None):
     return get_config(startdir)
 
 
+def _config_from_args(args, kwargs):
+    if len(args) > 0:
+        return args[0]
+    return kwargs.get('config', None)
+
+
 def ensure_config(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        has_config = (
-            len(args) > 0 and args[0] is not None or
-            'config' in kwargs and kwargs['config'] is not None
-        )
-        if not has_config:
+        config = _config_from_args(args, kwargs)
+        if not config:
             kwargs['config'] = get_config()
         return func(*args, **kwargs)
     return wrapper
@@ -68,6 +71,31 @@ def disallow_frozen(func):
         if is_frozen():
             raise FrozenEnvironmentError()
         return func(*args, **kwargs)
+    return wrapper
+
+
+def run_hooks(func):
+    prehook_name = f'pre_{func.__name__}'
+    posthook_name = f'post_{func.__name__}'
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        config = _config_from_args(args, kwargs)
+        plugins_list = config['general']['plugins']
+        prehooks = plugins.get_plugins(
+            filter_names=plugins_list,
+            has_attr=prehook_name
+        )
+        posthooks = plugins.get_plugins(
+            filter_names=plugins_list,
+            has_attr=posthook_name
+        )
+
+        for plugin in prehooks:
+            getattr(plugin, prehook_name)(config)
+        retval = func(*args, **kwargs)
+        for plugin in posthooks:
+            getattr(plugin, posthook_name)(config)
+        return retval
     return wrapper
 
 
@@ -183,6 +211,7 @@ def converter_copy(_config, srcdir, dstdir, assets):
 
 @ensure_config
 @disallow_frozen
+@run_hooks
 def build(config=None):
     verbose = config['general']['verbose']
     converters = plugins.get_converters(config['general']['plugins'])
@@ -288,6 +317,7 @@ def build(config=None):
 
 @ensure_config
 @disallow_frozen
+@run_hooks
 def run(config=None):
     mainfile = get_abs_path(config, config['run']['main_file'])
     print(f'Running main file: {mainfile}')
@@ -297,6 +327,7 @@ def run(config=None):
 
 @ensure_config
 @disallow_frozen
+@run_hooks
 def dist(config=None, build_installers=True, platforms=None):
     build(config)
 
@@ -317,6 +348,7 @@ def dist(config=None, build_installers=True, platforms=None):
 
 @ensure_config
 @disallow_frozen
+@run_hooks
 def clean(config=None):
     export_dir = config['build']['export_dir']
     shutil.rmtree(get_abs_path(config, export_dir), ignore_errors=True)
