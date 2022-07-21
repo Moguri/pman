@@ -9,6 +9,7 @@ import time
 
 
 from . import creationutils
+from . import plugins
 from .exceptions import CouldNotFindPythonError, FrozenEnvironmentError, NoConfigError
 from .config import ConfigDict
 
@@ -184,12 +185,7 @@ def converter_copy(_config, srcdir, dstdir, assets):
 @disallow_frozen
 def build(config=None):
     verbose = config['general']['verbose']
-    import pkg_resources
-    converters = [
-        entry_point.load()
-        for entry_point in pkg_resources.iter_entry_points('pman.converters')
-        if entry_point.name in config['build']['converters']
-    ]
+    converters = plugins.get_converters(config['general']['plugins'])
 
     stime = time.perf_counter()
     print('Starting build')
@@ -216,9 +212,12 @@ def build(config=None):
         ext_dst_map = {}
         ext_converter_map = {}
         for converter in converters:
-            ext_dst_map.update(converter.ext_dst_map)
-            for ext in converter.supported_exts:
-                ext_converter_map[ext] = converter
+            ext_dst_map.update({
+                ext: converter.output_extension
+                for ext in converter.supported_extensions
+            })
+            for ext in converter.supported_extensions:
+                ext_converter_map[ext] = converter.function
 
         for root, _dirs, files in os.walk(srcdir):
             for asset in files:
@@ -255,10 +254,10 @@ def build(config=None):
                 ext_asset_map[ext].append(os.path.join(root, asset))
 
         # Find which extensions have hooks available
-        convert_hooks = []
+        convert_functions = []
         for ext, converter in ext_converter_map.items():
             if ext in ext_asset_map:
-                convert_hooks.append((converter, ext_asset_map[ext]))
+                convert_functions.append((converter, ext_asset_map[ext]))
                 del ext_asset_map[ext]
 
         # Copy what is left
@@ -275,11 +274,11 @@ def build(config=None):
             converter_copy(config, srcdir, dstdir, ext_asset_map[ext])
 
         # Now run hooks that non-converted assets are in place (copied)
-        for convert_hook in convert_hooks:
+        for convert_function, assets in convert_functions:
             print('Converting files:')
-            for fname in convert_hook[1]:
+            for fname in assets:
                 print(f'\t{fname}')
-            convert_hook[0](config, srcdir, dstdir, convert_hook[1])
+            convert_function(config, srcdir, dstdir, assets)
     else:
         print(f'warning: could not find asset directory: {srcdir}')
 

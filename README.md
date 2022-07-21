@@ -13,6 +13,7 @@ pman is a Python package to help bootstrap and manage [Panda3D](https://github.c
 * Automatic asset conversion
 * Automatically adds export directory to the model path
 * Convenient CLI for running and testing applications
+* Plugin system for expanding functionality
 
 ## Installation
 
@@ -65,6 +66,7 @@ Section name: `general`
 |option|default|description|
 |---|---|---|
 |name|`"Game"`|The project name. For now this is only used for naming the built application in the default `setup.py`.|
+|plugins|`["DefaultPlugins"]`|A list of plugins to load and use. `"DefaultPlugins"` is expanded to the current default plugins, which makes it easier to enable additional plugins.|
 
 ### Build Options
 Section name: `build`
@@ -74,7 +76,6 @@ Section name: `build`
 |asset_dir|`"assets/"`|The directory to look for assets to convert.|
 |export_dir|`".built_assets/"`|The directory to store built assets.|
 |ignore_patterns|`[]`|A case-insensitive list of patterns. Files matching any of these patterns will not be ignored during the build step. Pattern matching is done using [the fnmatch module](https://docs.python.org/3/library/fnmatch.html)
-|converters|`["native2bam"]`|A list of hooks to perform conversions. Any files not associated with a converter will simply be copied (assuming they do not match an item in `ignore_patterns`).|
 
 ### Run Options
 Section name: `run`
@@ -85,17 +86,31 @@ Section name: `run`
 |extra_args|`""`|A string of extra arugments that are append to the invocation of `main_file`.|
 |auto_build|`true`|If `true`, automatically run builds as part of running the application (via `pman.shim.init`). This is disabled in deployed applications.|
 
-## Hooks
+## Plugins
 
-To extend functionality, pman has supports for "hooks."
-There are currently hooks available for conversion (converters) and project creation (creation extras).
-These hooks are specified in config via [Setuptools entry points](https://packaging.python.org/specifications/entry-points/).
-Hooks that ship with pman and their configuration options are described below.
+To extend functionality, pman offers a plugin system.
+These plugins are found by pman using [entry points](https://packaging.python.org/specifications/entry-points/).
 
-### Converters
+### Default Plugins
+
+By default, pman loads the following plugins:
+
+* native2bam
+* blend2bam
+
+When specifying plugins, a special `DefaultPlugins` string is available that expands to pman's current default plugins.
+For example, to use `MyAwesomePlugin` in addition to pman's default plugins use:
+
+```toml
+[General]
+plugins = ['DefaultPlugins', 'MyAwesomePlugin']
+```
+
+### Built-in Plugins
+
+Below are plugins that ship with pman and their options.
 
 #### native2bam
-Entry point: `native2bam`
 Support file formats: `egg`, `egg.pz`, `obj` (and `mtl`), `fbx`, `dae`, `ply`
 
 Loads the file into Panda and saves the result out to BAM. This relies on Panda's builtin file loading capabilities.
@@ -104,7 +119,6 @@ Loads the file into Panda and saves the result out to BAM. This relies on Panda'
 None
 
 #### blend2bam
-Entry point: `blend2bam`
 Supported file formats: `blend`
 
 Converts Blender files to BAM files via [blend2bam](https://github.com/Moguri/blend2bam).
@@ -114,7 +128,7 @@ Section name: `blend2bam`
 
 |option|default|description|
 |---|---|---|
-|material_mode|`"legacy"`|Specify whether to use the default Panda materials ("legacy") or Panda's new PBR material attributes ("pbr"). This is only used by the "gltf" pipeline; the "egg" always uses "legacy".|
+|material_mode|`"pbr"`|Specify whether to use the default Panda materials ("legacy") or Panda's new PBR material attributes ("pbr"). This is only used by the "gltf" pipeline; the "egg" always uses "legacy".|
 |physics_engine|`"builtin"`|The physics engine that collision solids should be built for. To export for Panda's builtin collision system, use "builtin." For Bullet, use "bullet." This is only used by the "gltf" pipeline; the "egg" pipeline always uses "builtin."|
 |pipeline|`"gltf"`|The backend that blend2bam uses to convert blend files. Go [here](https://github.com/Moguri/blend2bam#pipelines) for more information.|
 
