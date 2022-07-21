@@ -7,11 +7,11 @@ import pman
 
 
 def create(args, _config):
-    pman.create_project(args.dirname, args.extras)
+    pman.create_project(args.dirname, args.plugins.split(','))
 
 
 def update(args, config):
-    pman.create_project(config['internal']['projectdir'], args.extras)
+    pman.create_project(config['internal']['projectdir'], args.plugins.split(','))
 
 
 def build(_, config):
@@ -82,10 +82,9 @@ def main():
         help='Directory to create the project in (will be created if it does not exist)',
     )
     create_parser.add_argument(
-        '--extras',
+        '-p', '--plugins',
         action='store',
-        nargs='+',
-        help='Extra creation hooks to run',
+        help='Additional plugins to use (comma separated list)',
     )
     create_parser.set_defaults(func=create)
 
@@ -94,10 +93,9 @@ def main():
         help='Re-run project creation logic on the project directory'
     )
     update_parser.add_argument(
-        '--extras',
+        '-p', '--plugins',
         action='store',
-        nargs='+',
-        help='Extra creation hooks to run',
+        help='Additional plugins to use (comma separated list)',
     )
     update_parser.set_defaults(func=update)
 

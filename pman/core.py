@@ -10,8 +10,16 @@ import time
 
 from . import creationutils
 from . import plugins
-from .exceptions import CouldNotFindPythonError, FrozenEnvironmentError, NoConfigError
+from .exceptions import CouldNotFindPythonError, FrozenEnvironmentError, NoConfigError, ConfigError
 from .config import ConfigDict
+
+
+def get_config_plugins(config, has_attr=None):
+    plugins_list = config['general']['plugins']
+    return plugins.get_plugins(
+        filter_names=plugins_list,
+        has_attr=has_attr
+    )
 
 
 def get_config(startdir=None):
@@ -26,6 +34,12 @@ def get_config(startdir=None):
             config['python']['path'] = pyloc
         except CouldNotFindPythonError:
             pass
+
+    plist = get_config_plugins(config)
+    found_plugins = [i.name for i in plist]
+    for plugname in config['general']['plugins']:
+        if plugname not in found_plugins:
+            raise ConfigError(f'Failed to load requested plugin: {plugname}')
 
     return config
 
@@ -75,15 +89,8 @@ def run_hooks(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         config = _config_from_args(args, kwargs)
-        plugins_list = config['general']['plugins']
-        prehooks = plugins.get_plugins(
-            filter_names=plugins_list,
-            has_attr=prehook_name
-        )
-        posthooks = plugins.get_plugins(
-            filter_names=plugins_list,
-            has_attr=posthook_name
-        )
+        prehooks = get_config_plugins(config, prehook_name)
+        posthooks = get_config_plugins(config, posthook_name)
 
         for plugin in prehooks:
             getattr(plugin, prehook_name)(config)
@@ -95,22 +102,29 @@ def run_hooks(func):
 
 
 @disallow_frozen
-def create_project(projectdir='.', extras=None):
+def create_project(projectdir='.', extra_plugins=None):
     if not os.path.exists(projectdir):
         os.makedirs(projectdir)
 
     confpath = os.path.join(projectdir, '.pman')
     if os.path.exists(confpath):
         print(f'Updating project in {projectdir}')
+        config = get_config(projectdir)
+        config['general']['plugins'].extend(extra_plugins)
     else:
         print(f'Creating new project in {projectdir}')
 
-    if not os.path.exists(confpath):
-        # Touch config file to make sure it is present
-        with open(confpath, 'a') as _:
-            pass
+        # Create config file
+        with open(confpath, 'w') as conffile:
+            if extra_plugins:
+                if 'DefaultPlugins' not in extra_plugins:
+                    extra_plugins.insert(0, 'DefaultPlugins')
+                conffile.write('[general]\n')
+                conffile.write(f'plugins = {extra_plugins}\n')
+        config = get_config(projectdir)
 
-    config = get_config(projectdir)
+    for plugin in get_config_plugins(config, 'pre_create'):
+        getattr(plugin, 'pre_create')(config)
 
     creationutils.create_dirs(projectdir, (
         config['build']['asset_dir'],
@@ -129,17 +143,8 @@ def create_project(projectdir='.', extras=None):
         ('test_imports.py', 'tests/test_imports.py'),
     ))
 
-    if extras:
-        import pkg_resources
-        entrypoints = {
-            entrypoint.name: entrypoint.load()
-            for entrypoint in pkg_resources.iter_entry_points('pman.creation_extras')
-        }
-        for extra in extras:
-            if extra not in entrypoints:
-                print(f'Could not find creation extra: {extra}')
-                continue
-            entrypoints[extra](projectdir, config)
+    for plugin in get_config_plugins(config, 'pre_post'):
+        getattr(plugin, 'pre_post')(config)
 
 
 

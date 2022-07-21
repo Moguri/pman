@@ -6,6 +6,10 @@ class NoConfigError(PManException):
     pass
 
 
+class ConfigError(PManException):
+    pass
+
+
 class CouldNotFindPythonError(PManException):
     pass
 
