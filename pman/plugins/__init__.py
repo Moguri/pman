@@ -2,7 +2,7 @@ import collections
 import functools
 
 
-@functools.lru_cache
+@functools.lru_cache(maxsize=None)
 def _get_all_plugins():
     import pkg_resources
 
