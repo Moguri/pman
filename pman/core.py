@@ -40,11 +40,6 @@ def config_exists(startdir=None):
     return have_config
 
 
-def get_user_config(startdir=None):
-    '''Compatibility alias, use get_config() instead'''
-    return get_config(startdir)
-
-
 def _config_from_args(args, kwargs):
     if len(args) > 0:
         return args[0]
