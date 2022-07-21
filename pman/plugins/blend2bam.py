@@ -1,72 +1,10 @@
-import collections
 import fnmatch
-import functools
 import os
 import pprint
 import subprocess
 import sys
-import typing
 
-from dataclasses import dataclass
-
-@functools.lru_cache
-def _get_all_plugins():
-    import pkg_resources
-
-    def load_plugin(entrypoint):
-        plugin_class = entrypoint.load()
-        if not hasattr(plugin_class, 'name'):
-            plugin_class.name = entrypoint.name
-        return plugin_class()
-
-    return [
-        load_plugin(entrypoint)
-        for entrypoint in pkg_resources.iter_entry_points('pman.plugins')
-    ]
-
-
-def get_plugins(*, filter_names=None, has_attr=None):
-    plugins = _get_all_plugins()
-
-    def use_plugin(plugin):
-        return (
-            (not has_attr or hasattr(plugin, has_attr))
-            and (not filter_names or plugin.name in filter_names)
-        )
-
-    return [
-        plugin
-        for plugin in plugins
-        if use_plugin(plugin)
-    ]
-
-
-def get_converters(plugin_names):
-    plugins = get_plugins(filter_names=plugin_names, has_attr='converters')
-
-    Converter = collections.namedtuple('Converter', [
-        'supported_extensions',
-        'output_extension',
-        'function'
-    ])
-
-    return [
-        Converter(
-            cinfo.supported_extensions,
-            cinfo.output_extension,
-            getattr(plugin, cinfo.function_name)
-        )
-        for plugin in plugins
-        for cinfo in plugin.converters
-    ]
-
-
-@dataclass(frozen=True)
-class ConverterInfo:
-    supported_extensions: typing.List[str]
-    output_extension: str = '.bam'
-    function_name: str = 'convert'
-
+from .common import ConverterInfo
 
 class Blend2BamPlugin:
     converters = [
@@ -169,39 +107,3 @@ class Blend2BamPlugin:
                 print(f'Calling blend2bam: {" ".join(args)}')
 
             subprocess.check_call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
-
-
-class Native2BamPlugin:
-    converters = [
-        ConverterInfo(supported_extensions=[
-            '.egg.pz', '.egg',
-            '.obj', '.mtl',
-            '.fbx', '.dae',
-            '.ply',
-        ])
-    ]
-
-    def convert(self, config, srcdir, dstdir, assets):
-        verbose = config['general']['verbose']
-        processes = []
-        for asset in assets:
-            if asset.endswith('.mtl'):
-                # Handled by obj
-                continue
-
-            ext = '.' + asset.split('.', 1)[1]
-            dst = asset.replace(srcdir, dstdir).replace(ext, '.bam')
-            args = [
-                'native2bam',
-                asset,
-                dst
-            ]
-
-            if verbose:
-                print(f'Calling native2bam: {" ".join(args)}')
-            processes.append(
-                subprocess.Popen(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
-            )
-
-        for proc in processes:
-            proc.wait()
