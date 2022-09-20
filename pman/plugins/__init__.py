@@ -5,7 +5,7 @@ import functools
 @functools.lru_cache(maxsize=None)
 def _get_all_plugins():
     import pkg_resources
-    
+
     def load_plugin(entrypoint):
         try:
             plugin_class = entrypoint.load()
