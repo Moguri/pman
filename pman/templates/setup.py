@@ -1,5 +1,7 @@
 from setuptools import setup
 
+import pman
+
 CONFIG = pman.get_config()
 
 APP_NAME = CONFIG['general']['name']
