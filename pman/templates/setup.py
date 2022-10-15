@@ -1,7 +1,5 @@
 from setuptools import setup
 
-import pman.build_apps
-
 CONFIG = pman.get_config()
 
 APP_NAME = CONFIG['general']['name']
@@ -16,9 +14,6 @@ setup(
         'pylint~=2.6.0',
         'pytest-pylint',
     ],
-    cmdclass={
-        'build_apps': pman.build_apps.BuildApps,
-    },
     options={
         'build_apps': {
             'include_patterns': [
