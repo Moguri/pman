@@ -28,6 +28,7 @@ setup(
             'gui_apps': {
                 APP_NAME: CONFIG['run']['main_file'],
             },
+            'log_filename': f'$USER_APPDATA/{APP_NAME}/output.log',
             'plugins': [
                 'pandagl',
                 'p3openal_audio',
