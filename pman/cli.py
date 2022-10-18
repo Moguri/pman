@@ -7,11 +7,13 @@ import pman
 
 
 def create(args, _config):
-    pman.create_project(args.dirname, args.plugins.split(','))
+    plugins = args.plugins.split(',') if args.plugins is not None else None
+    pman.create_project(args.dirname, plugins)
 
 
 def update(args, config):
-    pman.create_project(config['internal']['projectdir'], args.plugins.split(','))
+    plugins = args.plugins.split(',') if args.plugins is not None else None
+    pman.create_project(config['internal']['projectdir'], plugins)
 
 
 def build(_, config):

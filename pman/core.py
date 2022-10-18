@@ -110,7 +110,8 @@ def create_project(projectdir='.', extra_plugins=None):
     if os.path.exists(confpath):
         print(f'Updating project in {projectdir}')
         config = get_config(projectdir)
-        config['general']['plugins'].extend(extra_plugins)
+        if extra_plugins:
+            config['general']['plugins'].extend(extra_plugins)
     else:
         print(f'Creating new project in {projectdir}')
 
