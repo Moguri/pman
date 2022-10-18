@@ -16,8 +16,3 @@ def projectdir(tmpdir):
 def projectconf(projectdir):
     with open('.pman', 'w') as f:
         yield f
-
-@pytest.fixture
-def userconf(projectdir):
-    with open('.pman.user', 'w') as f:
-        yield f
