@@ -329,12 +329,15 @@ def run(config=None):
 @ensure_config
 @disallow_frozen
 @run_hooks
-def dist(config=None, build_installers=True, platforms=None):
+def dist(config=None, build_installers=None, platforms=None):
     build(config)
 
     args = [
         'setup.py',
     ]
+
+    if build_installers is None:
+        build_installers = config['dist']['build_installers']
 
     if build_installers:
         args += ['bdist_apps']

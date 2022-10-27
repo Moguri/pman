@@ -37,6 +37,9 @@ class ConfigDict(collections.UserDict):
             'auto_build': True,
             'auto_save': True,
         },
+        'dist': {
+            'build_installers': True,
+        },
         'python': {
             'path': '',
         },

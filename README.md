@@ -86,6 +86,13 @@ Section name: `run`
 |extra_args|`""`|A string of extra arugments that are append to the invocation of `main_file`.|
 |auto_build|`true`|If `true`, automatically run builds as part of running the application (via `pman.shim.init`). This is disabled in deployed applications.|
 
+### Distribution Options
+Section name: `dist`
+
+|option|default|description|
+|---|---|---|
+|build_installers|`true`|Whether or not to build installers for built applications (i.e., run `bdist_apps`).|
+
 ## Plugins
 
 To extend functionality, pman offers a plugin system.

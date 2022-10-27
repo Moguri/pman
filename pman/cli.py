@@ -42,10 +42,13 @@ def dist(args, config):
         print('Setuptools-based distribution is not supported by this version of Panda3D')
         return
 
+    build_installers = None
+    if args.skip_installers:
+        build_installers = False
     platforms = args.platforms
     if platforms is not None:
         platforms = list(platforms)
-    pman.dist(config, build_installers=not args.skip_installers, platforms=platforms)
+    pman.dist(config, build_installers=build_installers, platforms=platforms)
 
 
 def clean(_, config):
