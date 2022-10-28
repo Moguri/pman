@@ -51,14 +51,22 @@ In addition to the `create` command, `pman` has the following commands:
 
 ## Configuration
 
-Primary configuration for `pman` is located in a `.pman` file located at the project root.
+`pman` will look for any of the following files in the project root:
+* pyproject.toml
+* .pman
+* .pman.user
+
 This configuration uses [TOML](https://github.com/toml-lang/toml) for markup.
-The `.pman` configuration file is project-wide and should be checked in under version control.
+The `.pman` or `pyproject.toml` configuration file is project-wide and should be checked in under version control.
 
 Another, per-user configuration file also exists at the project root as `.pman.user`.
 This configuration file stores user settings and should *not* be checked into version control. 
 
-Settings in `.pman.user` take precedence over settings in `.pman`. Settings defined in neither `.pman` nor `.pman.user` will use default values as defined below.
+Settings in `.pman.user` take precedence over settings in `.pman` and both take precedence over `pyproject.toml`.
+If a setting is not defined in a config file, a default value will be used.
+
+When storing settings in `pyproject.toml`, section names should be pre-pended with `tool.pman.`.
+For example, `general` options would be under `tool.pman.general`.
 
 ### General Options
 Section name: `general`

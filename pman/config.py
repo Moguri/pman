@@ -45,25 +45,32 @@ class ConfigDict(collections.UserDict):
         },
     }
 
-    PROJECT_CONFIG_NAME = '.pman'
-    USER_CONFIG_NAME = f'{PROJECT_CONFIG_NAME}.user'
+    PROJECT_CONFIG_NAMES = [
+        'pyproject.toml',
+        '.pman',
+        '.pman.user',
+    ]
     DEFAULT_PLUGINS = [
         'native2bam',
         'blend2bam',
     ]
 
-    def __init__(self, project_conf_file, user_conf_file):
-        with open(project_conf_file, 'rb') as conffile:
-            project_conf = toml.load(conffile)
-        user_conf = {}
-        if os.path.exists(user_conf_file):
-            with open(user_conf_file, 'rb') as conffile:
-                user_conf = toml.load(conffile)
+    def __init__(self, config_files):
+        confs = []
+        for confpath in config_files:
+            with (open(confpath, 'rb')) as conffile:
+                conf = toml.load(conffile)
+                if 'tool' in conf and 'pman' in conf['tool']:
+                    conf = conf['tool']['pman']
+                confs.append(conf)
 
-        if 'general' in user_conf and 'plugins' in user_conf['general']:
-            plugins_list = user_conf['general']['plugins']
-        elif 'general' in project_conf and 'plugins' in project_conf['general']:
-            plugins_list = project_conf['general']['plugins']
+        plugins_list = [
+            conf['general']['plugins']
+            for conf in confs
+            if 'general' in conf and 'plugins' in conf['general']
+        ]
+        if plugins_list:
+            plugins_list = plugins_list[-1]
         else:
             plugins_list = self._CONFIG_DEFAULTS['general']['plugins']
 
@@ -83,11 +90,10 @@ class ConfigDict(collections.UserDict):
         super().__init__(functools.reduce(_merge_dict, [
             {},
             config_defaults,
-            project_conf,
-            user_conf,
+            *confs,
             {
                 'internal': {
-                    'projectdir': os.path.dirname(project_conf_file),
+                    'projectdir': os.path.dirname(config_files[0]),
                 },
             },
         ]))
@@ -105,15 +111,18 @@ class ConfigDict(collections.UserDict):
 
         while dirs:
             cdir = os.sep.join(dirs)
-            if cdir.strip() and cls.PROJECT_CONFIG_NAME in os.listdir(cdir):
-                project_conf_file = os.path.join(cdir, cls.PROJECT_CONFIG_NAME)
-                user_conf_file = project_conf_file.replace(
-                    cls.PROJECT_CONFIG_NAME,
-                    cls.USER_CONFIG_NAME,
-                )
+            if not cdir.strip():
+                continue
 
-
-                return cls(project_conf_file, user_conf_file)
+            foundcfg = set(cls.PROJECT_CONFIG_NAMES) & set(os.listdir(cdir))
+            if foundcfg:
+                cfgpaths = [
+                    os.path.join(cdir, cfgname)
+                    for cfgname in cls.PROJECT_CONFIG_NAMES
+                    if cfgname in foundcfg
+                ]
+                print(cfgpaths)
+                return cls(cfgpaths)
 
             dirs.pop()
 

@@ -10,6 +10,34 @@ def test_conf_read(tmpdir):
     open('.pman', 'w').close()
     pman.get_config()
 
+def test_load_pyproject(tmpdir):
+    os.chdir(tmpdir.strpath)
+    with open('pyproject.toml', 'w') as pyproject:
+        pyproject.write('[metadata]\n')
+        pyproject.write('name = "foo"\n')
+        pyproject.write('[tool.pman.general]\n')
+        pyproject.write('verbose = true\n')
+        pyproject.write('[tool.pman.build]\n')
+        pyproject.write('asset_dir = "foobar"\n')
+
+    conf = pman.get_config()
+
+    assert conf['general']['verbose']
+
+def test_prefer_pman_over_pyproject(tmpdir):
+    os.chdir(tmpdir.strpath)
+
+    with open('pyproject.toml', 'w') as pyproject:
+        pyproject.write('[tool.pman.general]\n')
+        pyproject.write('name = "pyproject"\n')
+
+    with open('.pman', 'w') as pmanconf:
+        pmanconf.write('[general]\n')
+        pmanconf.write('name = "pmanconf"\n')
+
+    conf = pman.get_config()
+    assert conf['general']['name'] == 'pmanconf'
+
 
 def test_conf_contains(projectdir):
     config = pman.get_config()
