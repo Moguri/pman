@@ -121,7 +121,6 @@ class ConfigDict(collections.UserDict):
                     for cfgname in cls.PROJECT_CONFIG_NAMES
                     if cfgname in foundcfg
                 ]
-                print(cfgpaths)
                 return cls(cfgpaths)
 
             dirs.pop()
