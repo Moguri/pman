@@ -81,6 +81,7 @@ class Blend2BamPlugin:
                 '--material-mode', run['material_mode'],
                 '--physics-engine', run['physics_engine'],
                 '--pipeline', run['pipeline'],
+                '--textures', 'ref',
             ]
 
             if blend2bam_version[0] != 0 or blend2bam_version[1] >= 17:
