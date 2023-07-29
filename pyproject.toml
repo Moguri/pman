@@ -45,6 +45,9 @@ native2bam = "pman.native2bam:main"
 blend2bam = "pman.plugins.blend2bam:Blend2BamPlugin"
 native2bam = "pman.plugins.native2bam:Native2BamPlugin"
 
+[project.entry-points."setuptools.finalize_distribution_options"]
+pman = "pman.setuptools:finalize_distribution_options"
+
 [tool.setuptools]
 packages = ["pman"]
 
