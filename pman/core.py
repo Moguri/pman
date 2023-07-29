@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import time
+import tomli as toml
 
 
 from . import creationutils
@@ -332,7 +333,59 @@ def run(config=None):
 @disallow_frozen
 @run_hooks
 def dist(config=None, build_installers=None, platforms=None):
+    verbose = config['general']['verbose']
+
     build(config)
+
+    pyproject_path = os.path.join(
+        config['internal']['projectdir'],
+        'pyproject.toml'
+    )
+    setup_py_path = os.path.join(
+        config['internal']['projectdir'],
+        'setup.py'
+    )
+    requirements_path = os.path.join(
+        config['internal']['projectdir'],
+        'requirements.txt'
+    )
+
+    auto_deps = []
+    remove_requirements_txt = False
+    setup_py_opts = {}
+    remove_setup_py = False
+
+    if os.path.exists(pyproject_path):
+        with open(pyproject_path, 'rb') as conffile:
+            conf = toml.load(conffile)
+
+            auto_deps.extend(conf
+                             .get('project', {})
+                             .get('dependencies', []))
+
+            setup_py_opts = (conf
+                             .get('tool', {})
+                             .get('pman', {})
+                             .get('build_apps', {}))
+
+    if auto_deps and not os.path.exists(requirements_path):
+        # Auto-generate requirements.txt from pyproject.toml
+        if verbose:
+            print(f'Generating requirements.txt from pyproject.toml')
+        remove_requirements_txt = True
+        with open(requirements_path, 'w') as reqfile:
+            for dep in auto_deps:
+                reqfile.write(f'{dep}\n')
+
+    if setup_py_opts and not os.path.exists(setup_py_path):
+        # Auto-generate stub setup.py
+        if verbose:
+            print(f'Generating setup.py from pyproject.toml')
+        remove_setup_py = True
+        with open(setup_py_path, 'w') as setupfile:
+            setupfile.write('from setuptools import setup\nsetup(options={\n')
+            setupfile.write(f"'build_apps': {setup_py_opts}")
+            setupfile.write('\n})')
 
     args = [
         'setup.py',
@@ -349,8 +402,13 @@ def dist(config=None, build_installers=None, platforms=None):
     if platforms is not None:
         args += ['-p', '{}'.format(','.join(platforms))]
 
-    run_script(config, args, cwd=config['internal']['projectdir'])
-
+    try:
+        run_script(config, args, cwd=config['internal']['projectdir'])
+    finally:
+        if remove_requirements_txt:
+            os.remove(requirements_path)
+        if remove_setup_py:
+            os.remove(setup_py_path)
 
 @ensure_config
 @disallow_frozen
