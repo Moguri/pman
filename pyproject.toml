@@ -1,6 +1,55 @@
 [build-system]
 requires = [
-    "setuptools >= 42",
+    "setuptools >= 61",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "panda3d-pman"
+dynamic = ["version"]
+authors = [
+    {name = "Mitchell Stokes"},
+]
+description = "A Python package to help bootstrap and manage Panda3D applications"
+readme = "README.md"
+keywords = ["panda3d", "gamedev"]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "panda3d-blend2bam >= 0.22.0",
+    "tomli >= 2.0.1",
+]
+requires-python = ">= 3.6"
+
+[project.urls]
+homepage = "https://github.com/Moguri/pman"
+
+[project.optional-dependencies]
+test = [
+    "panda3d",
+    "pytest",
+    "pylint~=2.4.0",
+    "pytest-pylint"
+]
+
+[project.scripts]
+pman = "pman.cli:main"
+native2bam = "pman.native2bam:main"
+
+[project.entry-points."pman.plugins"]
+blend2bam = "pman.plugins.blend2bam:Blend2BamPlugin"
+native2bam = "pman.plugins.native2bam:Native2BamPlugin"
+
+[tool.setuptools]
+packages = ["pman"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pman.version.__version__"}
+
+[tool.pytest.ini_options]
+addopts = "--pylint --ignore=pman/templates/test_imports.py"
