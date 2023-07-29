@@ -5,15 +5,16 @@ import panda3d
 import pman.shim
 
 
-panda3d.core.load_prc_file(
-    panda3d.core.Filename.expand_from('$MAIN_DIR/settings.prc')
+panda3d.core.load_prc_file_data(
+    '',
+    'window-title Panda3D Game\n'
 )
 
 
 class GameApp(ShowBase):
     def __init__(self):
-        ShowBase.__init__(self)
         pman.shim.init(self)
+        ShowBase.__init__(self)
         self.accept('escape', sys.exit)
 
 

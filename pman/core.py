@@ -137,11 +137,7 @@ def create_project(projectdir='.', extra_plugins=None):
     templatedir = creationutils.get_template_dir()
     creationutils.copy_template_files(projectdir, templatedir, (
         ('main.py', config['run']['main_file']),
-        ('settings.prc', 'settings.prc'),
-        ('requirements.txt', 'requirements.txt'),
-        ('setup.py', 'setup.py'),
-        ('setup.cfg', 'setup.cfg'),
-        ('pylintrc', '.pylintrc'),
+        ('pyproject.toml', 'pyproject.toml'),
         ('test_imports.py', 'tests/test_imports.py'),
     ))
 
