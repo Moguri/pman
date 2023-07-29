@@ -17,7 +17,6 @@ class Blend2BamPlugin:
             'blender_dir': '',
             'material_mode': 'pbr',
             'physics_engine': 'builtin',
-            'pipeline': 'gltf',
             'animations': 'embed',
             'overrides': [],
         },
@@ -30,7 +29,6 @@ class Blend2BamPlugin:
 
         default_mat_mode = config['blend2bam']['material_mode']
         default_phy_engine = config['blend2bam']['physics_engine']
-        default_pipeline = config['blend2bam']['pipeline']
         default_animations = config['blend2bam']['animations']
         runs = []
 
@@ -50,7 +48,6 @@ class Blend2BamPlugin:
                 'files': files,
                 'material_mode': override.get('material_mode', default_mat_mode),
                 'physics_engine': override.get('physics_engine', default_phy_engine),
-                'pipeline': override.get('pipeline', default_pipeline),
                 'animations': override.get('animations', default_animations),
             })
             if verbose:
@@ -64,7 +61,6 @@ class Blend2BamPlugin:
                 'files': remaining_assets,
                 'material_mode': default_mat_mode,
                 'physics_engine': default_phy_engine,
-                'pipeline': default_pipeline,
                 'animations': default_animations,
             })
 
@@ -76,7 +72,6 @@ class Blend2BamPlugin:
                 '--srcdir', f'"{srcdir}"',
                 '--material-mode', run['material_mode'],
                 '--physics-engine', run['physics_engine'],
-                '--pipeline', run['pipeline'],
                 '--textures', 'ref',
             ]
 
