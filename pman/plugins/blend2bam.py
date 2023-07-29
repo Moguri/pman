@@ -24,11 +24,7 @@ class Blend2BamPlugin:
     }
 
     def convert(self, config, srcdir, dstdir, assets):
-        import blend2bam
-
         verbose = config['general']['verbose']
-
-        blend2bam_version = [int(i) for i in blend2bam.__version__.split('.')]
 
         remaining_assets = set(assets)
 
@@ -83,16 +79,6 @@ class Blend2BamPlugin:
                 '--pipeline', run['pipeline'],
                 '--textures', 'ref',
             ]
-
-            if blend2bam_version[0] != 0 or blend2bam_version[1] >= 17:
-                args += [
-                    '--animations', run['animations']
-                ]
-            elif run['animations'] != default_animations:
-                raise RuntimeError(
-                    'blend2bam >= 0.17 is required for animations values other'
-                    f' than "{default_animations}"'
-                )
 
             blenderdir = config['blend2bam']['blender_dir']
             if blenderdir:
