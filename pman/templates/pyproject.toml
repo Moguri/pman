@@ -24,9 +24,6 @@ test = [
 namespaces = false
 
 [tool.pman.build_apps]
-include_patterns = [
-    'settings.prc',
-]
 plugins = [
     "pandagl",
     "p3openal_audio",
