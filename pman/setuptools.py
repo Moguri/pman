@@ -2,7 +2,7 @@ import os
 import tomli as toml
 
 def finalize_distribution_options(dist):
-    from .core import get_config
+    from ._utils import get_config
 
     config = get_config()
     assertdir = config['build']['asset_dir']

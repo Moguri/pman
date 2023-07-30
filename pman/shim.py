@@ -1,16 +1,20 @@
 import panda3d.core as p3d
 
-from . import core as pman
+from ._utils import (
+    get_config,
+    is_frozen,
+)
+from ._build import build
 
 
 def init(_base):
     assetdir_rel = p3d.Filename('assets')
     config = None
 
-    if not pman.is_frozen():
-        config = pman.get_config()
+    if not is_frozen():
+        config = get_config()
         if config['run']['auto_build']:
-            pman.build(config)
+            build(config)
         assetdir_rel = p3d.Filename.from_os_specific(config['build']['export_dir'])
 
     # Add assets directory to model path
