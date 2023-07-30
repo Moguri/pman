@@ -40,14 +40,16 @@ def get_converters(plugin_names):
     Converter = collections.namedtuple('Converter', [
         'supported_extensions',
         'output_extension',
-        'function'
+        'function',
+        'plugin',
     ])
 
     return [
         Converter(
-            cinfo.supported_extensions,
+            tuple(cinfo.supported_extensions),
             cinfo.output_extension,
-            getattr(plugin, cinfo.function_name)
+            getattr(plugin, cinfo.function_name),
+            plugin,
         )
         for plugin in plugins
         for cinfo in plugin.converters
