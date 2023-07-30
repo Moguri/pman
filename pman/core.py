@@ -333,18 +333,9 @@ def dist(config=None, build_installers=None, platforms=None):
 
     build(config)
 
-    pyproject_path = os.path.join(
-        config['internal']['projectdir'],
-        'pyproject.toml'
-    )
-    setup_py_path = os.path.join(
-        config['internal']['projectdir'],
-        'setup.py'
-    )
-    requirements_path = os.path.join(
-        config['internal']['projectdir'],
-        'requirements.txt'
-    )
+    pyproject_path = get_abs_path(config, 'pyproject.toml')
+    setup_py_path = get_abs_path(config, 'setup.py')
+    requirements_path = get_abs_path(config, 'requirements.txt')
 
     auto_deps = []
     remove_requirements_txt = False
