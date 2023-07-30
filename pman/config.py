@@ -112,6 +112,7 @@ class ConfigDict(collections.UserDict):
         while dirs:
             cdir = os.sep.join(dirs)
             if not cdir.strip():
+                dirs.pop()
                 continue
 
             foundcfg = set(cls.PROJECT_CONFIG_NAMES) & set(os.listdir(cdir))
