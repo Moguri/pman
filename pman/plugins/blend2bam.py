@@ -27,9 +27,6 @@ class Blend2BamPlugin:
 
         remaining_assets = set(assets)
 
-        default_mat_mode = config['blend2bam']['material_mode']
-        default_phy_engine = config['blend2bam']['physics_engine']
-        default_animations = config['blend2bam']['animations']
         runs = []
 
         for override in config['blend2bam']['overrides']:
@@ -46,9 +43,7 @@ class Blend2BamPlugin:
 
             runs.append({
                 'files': files,
-                'material_mode': override.get('material_mode', default_mat_mode),
-                'physics_engine': override.get('physics_engine', default_phy_engine),
-                'animations': override.get('animations', default_animations),
+                'config': config['blend2bam'] | override
             })
             if verbose:
                 print('blend2bam: Using the following override\n{}'.format(
@@ -59,23 +54,22 @@ class Blend2BamPlugin:
         if remaining_assets:
             runs.append({
                 'files': remaining_assets,
-                'material_mode': default_mat_mode,
-                'physics_engine': default_phy_engine,
-                'animations': default_animations,
+                'config': config['blend2bam'],
             })
 
 
         for run in runs:
+            conf = run['config']
             args = [
                 sys.executable,
                 '-m', 'blend2bam',
                 '--srcdir', f'"{srcdir}"',
-                '--material-mode', run['material_mode'],
-                '--physics-engine', run['physics_engine'],
+                '--material-mode', conf['material_mode'],
+                '--physics-engine', conf['physics_engine'],
                 '--textures', 'ref',
             ]
 
-            blenderdir = config['blend2bam']['blender_dir']
+            blenderdir = conf['blender_dir']
             if blenderdir:
                 args += [
                     '--blender-dir', f'"{blenderdir}"',
