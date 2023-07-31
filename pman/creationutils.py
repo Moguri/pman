@@ -5,12 +5,12 @@ import shutil
 def create_dirs(projectdir, dirs):
     dirs = [os.path.join(projectdir, i) for i in dirs]
 
-    for d in dirs:
-        if os.path.exists(d):
-            print(f'\tSkipping existing directory: {d}')
+    for i in dirs:
+        if os.path.exists(i):
+            print(f'\tSkipping existing directory: {i}')
         else:
-            print(f'\tCreating directory: {d}')
-            os.mkdir(d)
+            print(f'\tCreating directory: {i}')
+            os.mkdir(i)
 
 
 def get_template_dir():

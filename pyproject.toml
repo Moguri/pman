@@ -55,5 +55,16 @@ packages = ["pman"]
 [tool.setuptools.dynamic]
 version = {attr = "pman.version.__version__"}
 
+[tool.pylint.main]
+jobs = 0
+
+[tool.pylint."message control"]
+disable = [
+    "r",
+    "missing-docstring",
+    "import-outside-toplevel",
+    "unspecified-encoding",
+]
+
 [tool.pytest.ini_options]
 addopts = "--pylint --ignore=pman/templates/test_imports.py"

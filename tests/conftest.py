@@ -14,5 +14,5 @@ def projectdir(tmpdir):
 
 @pytest.fixture
 def projectconf(projectdir):
-    with open('.pman', 'w') as f:
-        yield f
+    with open('.pman', 'w') as conffile:
+        yield conffile
