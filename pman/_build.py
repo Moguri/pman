@@ -85,20 +85,23 @@ def build(config=None):
         streams[converter].extend(assets)
 
     # Process assets
+    def skip_build(converter, asset):
+        if converter.output_extension:
+            dst = asset.split('.', 1)[0] + converter.output_extension
+        else:
+            dst = asset
+        dst = dst.replace(srcdir, dstdir)
+        if os.path.exists(dst) and os.stat(asset).st_mtime <= os.stat(dst).st_mtime:
+            if verbose:
+                print(f'Skip building up-to-date file: {get_rel_path(config, dst)}')
+            return True
+        return False
     for converter, assets in streams.items():
-        def skip_build(asset):
-            if converter.output_extension:
-                dst = asset.split('.', 1)[0] + converter.output_extension
-            else:
-                dst = asset
-            dst = dst.replace(srcdir, dstdir)
-            if os.path.exists(dst) and os.stat(asset).st_mtime <= os.stat(dst).st_mtime:
-                if verbose:
-                    print(f'Skip building up-to-date file: {get_rel_path(config, dst)}')
-                return True
-            return False
-
-        assets = list(filter(lambda x: not skip_build(x), assets))
+        assets = [
+            asset
+            for asset in assets
+            if not skip_build(converter, asset)
+        ]
 
         if not assets:
             continue

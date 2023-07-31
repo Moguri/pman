@@ -46,9 +46,7 @@ class Blend2BamPlugin:
                 'config': config['blend2bam'] | override
             })
             if verbose:
-                print('blend2bam: Using the following override\n{}'.format(
-                    pprint.pformat(runs[-1])
-                ))
+                print(f'blend2bam: Using the following override\n{pprint.pformat(runs[-1])}')
             remaining_assets -= files
 
         if remaining_assets:

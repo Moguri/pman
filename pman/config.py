@@ -103,9 +103,9 @@ class ConfigDict(collections.UserDict):
         try:
             if startdir is None:
                 startdir = os.getcwd()
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             # The project folder was deleted on us
-            raise NoConfigError("Could not find config file")
+            raise NoConfigError("Could not find config file") from exc
 
         dirs = os.path.abspath(startdir).split(os.sep)
 

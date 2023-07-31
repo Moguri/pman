@@ -106,7 +106,7 @@ def dist(config=None, build_installers=None, platforms=None):
     if auto_deps and not os.path.exists(requirements_path):
         # Auto-generate requirements.txt from pyproject.toml
         if verbose:
-            print(f'Generating requirements.txt from pyproject.toml')
+            print('Generating requirements.txt from pyproject.toml')
         remove_requirements_txt = True
         with open(requirements_path, 'w') as reqfile:
             for dep in auto_deps:
@@ -115,7 +115,7 @@ def dist(config=None, build_installers=None, platforms=None):
     if setup_py_opts and not os.path.exists(setup_py_path):
         # Auto-generate stub setup.py
         if verbose:
-            print(f'Generating setup.py from pyproject.toml')
+            print('Generating setup.py from pyproject.toml')
         remove_setup_py = True
         with open(setup_py_path, 'w') as setupfile:
             setupfile.write('from setuptools import setup\nsetup(options={\n')
@@ -135,7 +135,7 @@ def dist(config=None, build_installers=None, platforms=None):
         args += ['build_apps']
 
     if platforms is not None:
-        args += ['-p', '{}'.format(','.join(platforms))]
+        args += ['-p', f'{",".join(platforms)}']
 
     try:
         run_script(config, args, cwd=config['internal']['projectdir'])
