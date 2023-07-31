@@ -6,12 +6,15 @@ from .common import ConverterInfo
 
 class Native2BamPlugin:
     converters = [
-        ConverterInfo(supported_extensions=[
-            '.egg.pz', '.egg',
-            '.obj', '.mtl',
-            '.fbx', '.dae',
-            '.ply',
-        ])
+        ConverterInfo(
+            name='native2bam',
+            supported_extensions=[
+                '.egg.pz', '.egg',
+                '.obj', '.mtl',
+                '.fbx', '.dae',
+                '.ply',
+            ]
+        )
     ]
 
     def convert(self, config, srcdir, dstdir, assets):

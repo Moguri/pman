@@ -7,6 +7,7 @@ from .common import ConverterInfo
 class CopyFilePlugin:
     converters = [
         ConverterInfo(
+            name='copyfile',
             supported_extensions=[],
             output_extension='',
         )

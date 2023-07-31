@@ -106,7 +106,7 @@ def build(config=None):
         if not assets:
             continue
 
-        print(f'Processing files with {converter.plugin.__class__.__name__}:')
+        print(f'Processing files with {converter.name}:')
         for asset in assets:
             print(f'\t{get_rel_path(config, asset)}')
 

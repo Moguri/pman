@@ -38,6 +38,7 @@ def get_converters(plugin_names):
     plugins = get_plugins(filter_names=plugin_names, has_attr='converters')
 
     Converter = collections.namedtuple('Converter', [
+        'name',
         'supported_extensions',
         'output_extension',
         'function',
@@ -46,6 +47,7 @@ def get_converters(plugin_names):
 
     return [
         Converter(
+            cinfo.name,
             tuple(cinfo.supported_extensions),
             cinfo.output_extension,
             getattr(plugin, cinfo.function_name),

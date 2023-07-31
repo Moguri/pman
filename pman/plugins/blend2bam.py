@@ -8,7 +8,10 @@ from .common import ConverterInfo
 
 class Blend2BamPlugin:
     converters = [
-        ConverterInfo(supported_extensions=['.blend'])
+        ConverterInfo(
+            name='blend2bam',
+            supported_extensions=['.blend'],
+        )
     ]
 
 
