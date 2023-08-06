@@ -83,4 +83,14 @@ class Blend2BamPlugin:
             if verbose:
                 print(f'Calling blend2bam: {" ".join(args)}')
 
-            subprocess.check_call(args, env=os.environ.copy(), stdout=subprocess.DEVNULL)
+            proc = subprocess.run(
+                args,
+                env=os.environ.copy(),
+                text=True,
+                capture_output=True,
+                check=True
+            )
+            if verbose:
+                print(proc.stdout)
+            if proc.stderr:
+                print(proc.stderr)
