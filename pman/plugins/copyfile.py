@@ -18,5 +18,5 @@ class CopyFilePlugin:
             src = asset
             dst = src.replace(srcdir, dstdir)
             if not os.path.exists(os.path.dirname(dst)):
-                os.makedirs(os.path.dirname(dst))
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
             shutil.copyfile(src, dst)

@@ -30,6 +30,7 @@ class ConfigDict(collections.UserDict):
             'asset_dir': 'assets/',
             'export_dir': '.built_assets/',
             'ignore_patterns': ['*.blend1', '*.blend2'],
+            'jobs': 0,
         },
         'run': {
             'main_file': 'main.py',
