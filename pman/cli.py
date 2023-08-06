@@ -157,7 +157,10 @@ def main():
         config['general']['verbose'] = args.verbose or config['general']['verbose']
     else:
         config = None
-    args.func(args, config)
+    try:
+        args.func(args, config)
+    except KeyboardInterrupt:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
