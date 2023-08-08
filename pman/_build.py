@@ -29,6 +29,7 @@ from ._utils import (
 @run_hooks
 def build(config=None):
     verbose = config['general']['verbose']
+    show_all_jobs = config['build']['show_all_jobs']
     converters = plugins.get_converters(config['general']['plugins'])
 
     stime = time.perf_counter()
@@ -138,6 +139,7 @@ def build(config=None):
             finished_text='[progress.percentage]:heavy_check_mark:'
         ),
     )
+    show_all = verbose or show_all_jobs
     taskids = []
     for jobstr, fut in jobs:
         taskid = job_progress.add_task(jobstr, total=None, visible=verbose)
@@ -162,8 +164,8 @@ def build(config=None):
             job_progress.update(
                 taskid,
                 completed=1 if fut.done() else 0,
-                total=1 if fut.running() or fut.done() else 0,
-                visible=fut.running() or verbose
+                total=1 if fut.running() or fut.done() else None,
+                visible=fut.running() or show_all
             )
         overall_progress.update(
             overall_task,
@@ -187,4 +189,4 @@ def build(config=None):
         pool.shutdown(wait=False, cancel_futures=True)
         raise exc
 
-    print(f':stopwatch: Build took {time.perf_counter() - stime:.4f}s')
+    print(f':stopwatch: Build took [json.number]{time.perf_counter() - stime:.2f}s')
