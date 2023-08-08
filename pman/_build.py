@@ -110,7 +110,6 @@ def build(config=None):
         return False
 
     max_workers = config['build']['jobs']
-    max_batch = 1
     if max_workers <= 0:
         max_workers = None
     pool = concurrent.futures.ProcessPoolExecutor(max_workers=max_workers)
@@ -125,6 +124,7 @@ def build(config=None):
         if not assets:
             continue
 
+        max_batch = getattr(converter.plugin, 'BATCH_SIZE', 1)
         chunk_it = iter(assets)
         while chunk := tuple(itertools.islice(chunk_it, max_batch)):
             jobstr = f'{converter.name}: {", ".join(get_rel_path(config, i) for i in chunk)}'

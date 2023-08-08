@@ -14,6 +14,8 @@ class Blend2BamPlugin:
         )
     ]
 
+    BATCH_SIZE = 3
+
 
     CONFIG_DEFAULTS = {
         'blend2bam': {
