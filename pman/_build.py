@@ -152,7 +152,7 @@ def build(config=None):
     )
     overall_task = overall_progress.add_task(
         "All jobs",
-        total = len(taskids)
+        total=len(taskids),
     )
 
     progress_table = table.Table.grid()
@@ -173,10 +173,11 @@ def build(config=None):
         )
 
     try:
-        with live.Live(progress_table):
-            while unfinished := [x for x in taskids if not x[1].done()]:
+        if len(jobs) > 0:
+            with live.Live(progress_table):
+                while unfinished := [x for x in taskids if not x[1].done()]:
+                    update_progress()
                 update_progress()
-            update_progress()
         pool.shutdown(wait=True)
         for _, fut in jobs:
             fut.result()
