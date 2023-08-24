@@ -70,6 +70,7 @@ class Blend2BamPlugin:
                 '--material-mode', conf['material_mode'],
                 '--physics-engine', conf['physics_engine'],
                 '--textures', 'ref',
+                '--animations', conf['animations'],
             ]
 
             blenderdir = conf['blender_dir']
