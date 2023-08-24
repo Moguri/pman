@@ -91,9 +91,11 @@ class Blend2BamPlugin:
                 env=os.environ.copy(),
                 text=True,
                 capture_output=True,
-                check=True
+                check=False,
             )
             if verbose:
                 print(proc.stdout)
             if proc.stderr:
                 print(proc.stderr)
+
+            proc.check_returncode()
