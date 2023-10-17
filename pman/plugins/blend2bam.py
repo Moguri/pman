@@ -23,6 +23,7 @@ class Blend2BamPlugin:
             'material_mode': 'pbr',
             'physics_engine': 'builtin',
             'animations': 'embed',
+            'textures': 'ref',
             'overrides': [],
         },
     }
@@ -69,7 +70,7 @@ class Blend2BamPlugin:
                 '--srcdir', f'"{srcdir}"',
                 '--material-mode', conf['material_mode'],
                 '--physics-engine', conf['physics_engine'],
-                '--textures', 'ref',
+                '--textures', conf['textures'],
                 '--animations', conf['animations'],
             ]
 
