@@ -4,7 +4,7 @@ import functools
 
 @functools.lru_cache(maxsize=None)
 def _get_all_plugins():
-    import pkg_resources
+    from importlib.metadata import entry_points
 
     def load_plugin(entrypoint):
         plugin_class = entrypoint.load()
@@ -12,9 +12,15 @@ def _get_all_plugins():
             plugin_class.name = entrypoint.name
         return plugin_class()
 
+    eps = entry_points()
+    if isinstance(eps, dict): # Python 3.8 and 3.9
+        plugins = eps.get('pman.plugins')
+    else:
+        plugins = eps.select(group='pman.plugins')
+
     return [
         load_plugin(entrypoint)
-        for entrypoint in pkg_resources.iter_entry_points('pman.plugins')
+        for entrypoint in plugins
     ]
 
 
