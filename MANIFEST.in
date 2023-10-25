@@ -1,6 +1,7 @@
 include *.md
 include LICENSE.txt
 graft pman/templates
+graft pman/plugins
 
 global-exclude __pycache__
 global-exclude *.py[co]
