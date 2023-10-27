@@ -4,6 +4,7 @@ import fnmatch
 import itertools
 import os
 import signal
+import sys
 import time
 
 # pylint: disable=redefined-builtin
@@ -187,7 +188,12 @@ def build(config=None):
                 os.kill(pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
-        pool.shutdown(wait=False, cancel_futures=True)
+        shutdown_args = {
+            'wait': False
+        }
+        if sys.version_info >= (3, 9):
+            shutdown_args['cancel_futures'] = True
+        pool.shutdown(**shutdown_args)
         raise exc
 
     print(f':stopwatch: Build took [json.number]{time.perf_counter() - stime:.2f}s')
