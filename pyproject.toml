@@ -21,7 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "panda3d-blend2bam >= 0.22.0",
+    "panda3d-blend2bam >= 0.24.0",
     "tomli >= 2.0.1",
     "rich ~= 13.5.0",
     'setuptools; python_version >= "3.12"',

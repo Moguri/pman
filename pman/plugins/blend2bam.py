@@ -4,7 +4,10 @@ import pprint
 import subprocess
 import sys
 
-from .common import ConverterInfo
+from .common import (
+    ConverterInfo,
+    ConverterResult,
+)
 
 class Blend2BamPlugin:
     converters = [
@@ -30,6 +33,8 @@ class Blend2BamPlugin:
 
     def convert(self, config, srcdir, dstdir, assets):
         verbose = config['general']['verbose']
+        assetdir = config['build']['asset_dir']
+        results: list[ConverterResult] = []
 
         remaining_assets = set(assets)
 
@@ -66,6 +71,7 @@ class Blend2BamPlugin:
             conf = run['config']
             args = [
                 sys.executable,
+                '-u',
                 '-m', 'blend2bam',
                 '--srcdir', f'"{srcdir}"',
                 '--material-mode', conf['material_mode'],
@@ -99,4 +105,19 @@ class Blend2BamPlugin:
             if proc.stderr:
                 print(proc.stderr)
 
+            output = proc.stdout.split('Read blend: ')[1:]
+            for blend in output:
+                input_file = os.path.relpath(blend.splitlines()[0].replace('"', ''), assetdir)
+                output_file = input_file.rsplit('.blend', 1)[0] + '.bam'
+                results.append(ConverterResult(
+                    input_file=input_file,
+                    output_file=output_file,
+                    dependencies=[
+                        os.path.relpath(i.split()[3].replace("'", '').replace(',', ''), assetdir)
+                        for i in blend.splitlines()
+                        if i.startswith('Info: Read library')
+                    ]
+                ))
+
             proc.check_returncode()
+            return results

@@ -1,7 +1,9 @@
 import collections
 import concurrent.futures
+import dataclasses
 import fnmatch
 import itertools
+import json
 import os
 import signal
 import sys
@@ -17,6 +19,7 @@ from rich import (
 
 
 from . import plugins
+from .plugins.common import ConverterResult
 from ._utils import (
     disallow_frozen,
     ensure_config,
@@ -30,11 +33,31 @@ from ._utils import (
 @run_hooks
 def build(config=None):
     verbose = config['general']['verbose']
+    builddb_path = os.path.join(
+        config['internal']['projectdir'],
+        '.pman_builddb'
+    )
     show_all_jobs = config['build']['show_all_jobs']
     converters = plugins.get_converters(config['general']['plugins'])
 
     stime = time.perf_counter()
     print('Starting build')
+
+    builddb = []
+    try:
+        if os.path.exists(builddb_path):
+            with open(builddb_path, encoding='utf8') as builddb_file:
+                builddb = [
+                    ConverterResult(**i)
+                    for i in json.load(builddb_file)
+                ]
+    except json.decoder.JSONDecodeError:
+        pass
+
+    builddb = {
+        result.output_file: result
+        for result in builddb
+    }
 
     srcdir = get_abs_path(config, config['build']['asset_dir'])
     dstdir = get_abs_path(config, config['build']['export_dir'])
@@ -104,7 +127,18 @@ def build(config=None):
         else:
             dst = asset
         dst = dst.replace(srcdir, dstdir)
-        if os.path.exists(dst) and os.stat(asset).st_mtime <= os.stat(dst).st_mtime:
+        builddb_key = os.path.relpath(dst, dstdir)
+        deps = [asset]
+        if builddb_key in builddb:
+            deps += [
+                os.path.join(config['build']['asset_dir'], dep)
+                for dep in builddb[builddb_key].dependencies
+            ]
+        skip = (
+            os.path.exists(dst)
+            and all((os.stat(i).st_mtime <= os.stat(dst).st_mtime for i in deps))
+        )
+        if skip:
             if verbose:
                 print(f'Skip building up-to-date file: {get_rel_path(config, dst)}')
             return True
@@ -181,7 +215,8 @@ def build(config=None):
                 update_progress()
         pool.shutdown(wait=True)
         for _, fut in jobs:
-            fut.result()
+            for result in fut.result():
+                builddb[result.output_file] = result
     except KeyboardInterrupt as exc:
         for pid in pool._processes: # pylint: disable=protected-access
             try:
@@ -196,4 +231,6 @@ def build(config=None):
         pool.shutdown(**shutdown_args)
         raise exc
 
+    with open(builddb_path, 'w', encoding='utf8') as builddb_file:
+        json.dump([dataclasses.asdict(i) for i in builddb.values()], builddb_file)
     print(f':stopwatch: Build took [json.number]{time.perf_counter() - stime:.2f}s')

@@ -153,3 +153,7 @@ def clean(config=None):
     shutil.rmtree(get_abs_path(config, export_dir), ignore_errors=True)
     shutil.rmtree(get_abs_path(config, 'build'), ignore_errors=True)
     shutil.rmtree(get_abs_path(config, 'dist'), ignore_errors=True)
+    try:
+        os.unlink(get_abs_path(config, '.pman_builddb'))
+    except FileNotFoundError:
+        pass
