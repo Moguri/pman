@@ -16,7 +16,7 @@ class CopyFilePlugin:
         )
     ]
 
-    def convert(self, config, srcdir, dstdir, assets):
+    def convert(self, config, _converter_config, srcdir, dstdir, assets):
         results: list[ConverterResult] = []
         assetdir = config['build']['asset_dir']
         exportdir = config['build']['export_dir']

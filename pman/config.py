@@ -18,8 +18,6 @@ def _merge_dict(dst: dict, src: dict):
     return dst
 
 class ConfigDict(collections.UserDict):
-    '''Extend ChainMap to provide a config object with overlays'''
-
     _CONFIG_DEFAULTS = {
         'general': {
             'name': 'Game',
@@ -32,6 +30,7 @@ class ConfigDict(collections.UserDict):
             'ignore_patterns': ['*.blend1', '*.blend2'],
             'show_all_jobs': False,
             'jobs': 0,
+            'streams': [],
         },
         'run': {
             'main_file': 'main.py',

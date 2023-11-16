@@ -17,7 +17,7 @@ class Native2BamPlugin:
         )
     ]
 
-    def convert(self, config, srcdir, dstdir, assets):
+    def convert(self, config, _converter_config, srcdir, dstdir, assets):
         verbose = config['general']['verbose']
         processes = []
         for asset in assets:
