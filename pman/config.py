@@ -1,13 +1,14 @@
+import functools
+import os
 from dataclasses import (
     dataclass,
     field,
     fields,
     is_dataclass,
 )
-import functools
-import os
 from typing import (
     Any,
+    ClassVar,
 )
 
 import tomli as toml
@@ -54,7 +55,7 @@ class ConfigBase:
 
 @dataclass
 class GeneralConfig(ConfigBase):
-    DEFAULT_PLUGINS = [
+    DEFAULT_PLUGINS: ClassVar[list[str]] = [
         'native2bam',
         'blend2bam',
     ]
@@ -110,7 +111,7 @@ class InternalConfig(ConfigBase):
 
 @dataclass
 class Config(ConfigBase):
-    PROJECT_CONFIG_NAMES = [
+    PROJECT_CONFIG_NAMES: ClassVar[list[str]] = [
         'pyproject.toml',
         '.pman',
         '.pman.user',

@@ -2,7 +2,6 @@ import argparse
 import subprocess
 import sys
 
-
 import pman
 
 
@@ -35,12 +34,6 @@ def test(_, config):
 
 def dist(args, config):
     pman.get_python_program(config)
-
-    try:
-        import direct.dist.commands #pylint:disable=unused-import,unused-variable
-    except ImportError:
-        print('Setuptools-based distribution is not supported by this version of Panda3D')
-        return
 
     build_installers = None
     if args.skip_installers:

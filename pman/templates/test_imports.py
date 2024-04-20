@@ -1,2 +1,2 @@
 def test_imports():
-    import panda3d.core #pylint: disable=unused-import
+    import panda3d.core  #noqa: F401

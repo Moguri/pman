@@ -1,5 +1,8 @@
 import os
 import shutil
+from typing import (
+    ClassVar,
+)
 
 from .common import (
     ConverterInfo,
@@ -8,7 +11,7 @@ from .common import (
 
 
 class CopyFilePlugin:
-    converters = [
+    converters: ClassVar[list[ConverterInfo]] = [
         ConverterInfo(
             name='copyfile',
             supported_extensions=[],

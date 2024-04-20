@@ -1,5 +1,7 @@
 import os
+
 import tomli as toml
+
 
 def finalize_distribution_options(dist):
     from ._utils import get_config

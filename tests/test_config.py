@@ -4,8 +4,6 @@ import pman
 import pman.config
 
 
-#pylint:disable=unused-argument
-
 def test_conf_read(tmpdir):
     os.chdir(tmpdir.strpath)
     open('.pman', 'w').close()
@@ -81,7 +79,7 @@ def test_conf_missing(projectdir):
     assert config['python']
     assert config.python
     assert config['blend2bam']
-    assert config.blend2bam  # pylint: disable=no-member
+    assert config.blend2bam
     assert config.plugins['blend2bam']
 
 def test_dataclass_from_dict():

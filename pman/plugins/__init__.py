@@ -13,7 +13,7 @@ def _get_all_plugins():
         return plugin_class()
 
     eps = entry_points()
-    if isinstance(eps, dict): # Python 3.8 and 3.9
+    if isinstance(eps, dict): # Python 3.8 and 3.9 # noqa: SIM108
         plugins = eps.get('pman.plugins')
     else:
         plugins = eps.select(group='pman.plugins')

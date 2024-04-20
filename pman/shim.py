@@ -1,10 +1,10 @@
 import panda3d.core as p3d
 
+from ._build import build
 from ._utils import (
     get_config,
     is_frozen,
 )
-from ._build import build
 
 
 def init(_base):

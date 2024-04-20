@@ -1,17 +1,18 @@
+import contextlib
 import os
 import shlex
 import shutil
-import tomli as toml
 
+import tomli as toml
 
 from . import creationutils
 from ._build import build
 from ._utils import (
+    disallow_frozen,
+    ensure_config,
     get_abs_path,
     get_config,
     get_config_plugins,
-    ensure_config,
-    disallow_frozen,
     run_hooks,
     run_script,
 )
@@ -41,7 +42,7 @@ def create_project(projectdir='.', extra_plugins=None):
         config = get_config(projectdir)
 
     for plugin in get_config_plugins(config, 'pre_create'):
-        getattr(plugin, 'pre_create')(config)
+        plugin.pre_create(config)
 
     creationutils.create_dirs(projectdir, (
         config['build']['asset_dir'],
@@ -56,11 +57,8 @@ def create_project(projectdir='.', extra_plugins=None):
         ('test_imports.py', 'tests/test_imports.py'),
     ))
 
-    for plugin in get_config_plugins(config, 'pre_post'):
-        getattr(plugin, 'pre_post')(config)
-
-
-
+    for plugin in get_config_plugins(config, 'post_create'):
+        plugin.post_create(config)
 
 
 @ensure_config
@@ -69,7 +67,7 @@ def create_project(projectdir='.', extra_plugins=None):
 def run(config=None):
     mainfile = get_abs_path(config, config['run']['main_file'])
     print(f'Running main file: {mainfile}')
-    args = [mainfile] + shlex.split(config['run']['extra_args'])
+    args = [mainfile, *shlex.split(config['run']['extra_args'])]
     run_script(config, args, cwd=config['internal']['projectdir'])
 
 
@@ -153,7 +151,5 @@ def clean(config=None):
     shutil.rmtree(get_abs_path(config, export_dir), ignore_errors=True)
     shutil.rmtree(get_abs_path(config, 'build'), ignore_errors=True)
     shutil.rmtree(get_abs_path(config, 'dist'), ignore_errors=True)
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.unlink(get_abs_path(config, '.pman_builddb'))
-    except FileNotFoundError:
-        pass

@@ -3,7 +3,6 @@ import os
 
 import panda3d.core as p3d
 
-
 CONFIG_DATA = """
 assimp-gen-normals true
 bam-texture-mode unchanged
@@ -23,8 +22,8 @@ def make_texpath_relative(node, srcdir, converted_textures):
                     continue
                 texture.filename = os.path.relpath(texture.filename, srcdir)
                 converted_textures.add(texture)
-            renderstate = renderstate.set_attrib(texattrib)
-        geomnode.set_geom_state(idx, renderstate)
+            newrenderstate = renderstate.set_attrib(texattrib)
+        geomnode.set_geom_state(idx, newrenderstate)
 
 
 

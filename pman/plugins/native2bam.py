@@ -1,11 +1,14 @@
 import os
 import subprocess
+from typing import (
+    ClassVar,
+)
 
 from .common import ConverterInfo
 
 
 class Native2BamPlugin:
-    converters = [
+    converters: ClassVar[list[ConverterInfo]] = [
         ConverterInfo(
             name='native2bam',
             supported_extensions=[

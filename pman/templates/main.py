@@ -1,9 +1,9 @@
 import sys
 
-from direct.showbase.ShowBase import ShowBase
 import panda3d
-import pman.shim
+from direct.showbase.ShowBase import ShowBase
 
+import pman.shim
 
 panda3d.core.load_prc_file_data(
     '',

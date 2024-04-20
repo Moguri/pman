@@ -1,8 +1,6 @@
 import pman
 import pman.shim
 
-#pylint:disable=unused-argument
-
 
 def test_create_project(projectdir):
     # projectdir already creates a project
@@ -39,7 +37,7 @@ def test_run_args(projectdir):
 
     pman.run(config)
 
-    with open('tmp', 'r') as tmpfile:
+    with open('tmp') as tmpfile:
         assert tmpfile.read() == "['--test', 'hello world']"
 
 def test_shim(projectdir):

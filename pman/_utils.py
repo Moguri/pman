@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 
-from .import plugins
+from . import plugins
 from .config import Config
 from .exceptions import (
     ConfigError,
@@ -63,7 +63,7 @@ def run_program(_config, args, cwd=None):
 
 def run_script(config, args, cwd=None):
     pyprog = get_python_program(config)
-    run_program(config, [pyprog] + args, cwd=cwd)
+    run_program(config, [pyprog, *args], cwd=cwd)
 
 
 def get_config_plugins(config, has_attr=None):
@@ -128,7 +128,7 @@ def disallow_frozen(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if is_frozen():
-            raise FrozenEnvironmentError()
+            raise FrozenEnvironmentError
         return func(*args, **kwargs)
     return wrapper
 

@@ -1,5 +1,6 @@
 import collections
 import concurrent.futures
+import contextlib
 import dataclasses
 import fnmatch
 import itertools
@@ -10,7 +11,6 @@ import signal
 import sys
 import time
 
-# pylint: disable=redefined-builtin
 from rich import (
     live,
     print,
@@ -18,9 +18,7 @@ from rich import (
     table,
 )
 
-
 from . import plugins
-from .plugins.common import ConverterResult
 from ._utils import (
     disallow_frozen,
     ensure_config,
@@ -28,9 +26,10 @@ from ._utils import (
     get_rel_path,
     run_hooks,
 )
+from .plugins.common import ConverterResult
 
 
-def gather_files(srcdir, include_patterns, exclude_patterns, verbose=False):
+def gather_files(srcdir, include_patterns, exclude_patterns, *, verbose=False):
     found_assets = []
     for root, _dirs, files in os.walk(srcdir):
         for asset in files:
@@ -152,7 +151,7 @@ def generate_explicit_streams(config, converters):
             verbose=verbose
         )
         plugin_name = stream_configs['plugin']
-        converter = converter_map.get(plugin_name, None)
+        converter = converter_map.get(plugin_name)
         if not converter:
             print(
                 f'Failed to find plugin ({plugin_name}) for stream\n'
@@ -236,7 +235,7 @@ def build(config=None):
             ]
         skip = (
             os.path.exists(dst)
-            and all((os.stat(i).st_mtime <= os.stat(dst).st_mtime for i in deps))
+            and all(os.stat(i).st_mtime <= os.stat(dst).st_mtime for i in deps)
         )
         if skip:
             if verbose:
@@ -249,10 +248,10 @@ def build(config=None):
         max_workers = None
     pool = concurrent.futures.ProcessPoolExecutor(max_workers=max_workers)
     jobs = []
-    for converter, assets, converter_config in streams:
+    for converter, stream_assets, converter_config in streams:
         assets = [
             asset
-            for asset in assets
+            for asset in stream_assets
             if not skip_build(converter, asset)
         ]
 
@@ -317,19 +316,17 @@ def build(config=None):
         for _, fut in jobs:
             for result in fut.result():
                 builddb[result.output_file] = result
-    except KeyboardInterrupt as exc:
-        for pid in pool._processes: # pylint: disable=protected-access
-            try:
+    except KeyboardInterrupt:
+        for pid in pool._processes: # noqa
+            with contextlib.suppress(ProcessLookupError):
                 os.kill(pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
         shutdown_args = {
             'wait': False
         }
         if sys.version_info >= (3, 9):
             shutdown_args['cancel_futures'] = True
         pool.shutdown(**shutdown_args)
-        raise exc
+        raise
 
     with open(builddb_path, 'w', encoding='utf8') as builddb_file:
         json.dump([dataclasses.asdict(i) for i in builddb.values()], builddb_file)

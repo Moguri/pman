@@ -1,23 +1,23 @@
-class PManException(Exception):
+class PManError(Exception):
     pass
 
 
-class NoConfigError(PManException):
+class NoConfigError(PManError):
     pass
 
 
-class ConfigError(PManException):
+class ConfigError(PManError):
     pass
 
 
-class CouldNotFindPythonError(PManException):
+class CouldNotFindPythonError(PManError):
     pass
 
 
-class BuildError(PManException):
+class BuildError(PManError):
     pass
 
 
-class FrozenEnvironmentError(PManException):
+class FrozenEnvironmentError(PManError):
     def __init__(self):
         super().__init__("Operation not supported in frozen applications")

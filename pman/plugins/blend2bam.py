@@ -1,12 +1,13 @@
+import os
+import subprocess
+import sys
 from dataclasses import (
     dataclass,
     field,
 )
-import os
-import subprocess
-import sys
 from typing import (
     Any,
+    ClassVar,
     Literal,
 )
 
@@ -15,8 +16,9 @@ from .common import (
     ConverterResult,
 )
 
+
 class Blend2BamPlugin:
-    converters = [
+    converters: ClassVar[list[ConverterInfo]] = [
         ConverterInfo(
             name='blend2bam',
             supported_extensions=['.blend'],
@@ -93,5 +95,5 @@ class Blend2BamPlugin:
                 ]
             ))
 
-            proc.check_returncode()
-            return results
+        proc.check_returncode()
+        return results
