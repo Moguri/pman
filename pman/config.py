@@ -1,8 +1,16 @@
-import collections
+from dataclasses import (
+    dataclass,
+    field,
+    fields,
+    is_dataclass,
+)
 import functools
 import os
-import tomli as toml
+from typing import (
+    Any,
+)
 
+import tomli as toml
 
 from . import plugins
 from .exceptions import NoConfigError
@@ -17,90 +25,107 @@ def _merge_dict(dst: dict, src: dict):
 
     return dst
 
-class ConfigDict(collections.UserDict):
-    _CONFIG_DEFAULTS = {
-        'general': {
-            'name': 'Game',
-            'verbose': False,
-            'plugins': ['DefaultPlugins'],
-        },
-        'build': {
-            'asset_dir': 'assets/',
-            'export_dir': '.built_assets/',
-            'ignore_patterns': ['*.blend1', '*.blend2'],
-            'show_all_jobs': False,
-            'jobs': 0,
-            'streams': [],
-        },
-        'run': {
-            'main_file': 'main.py',
-            'extra_args': '',
-            'auto_build': True,
-            'auto_save': True,
-        },
-        'dist': {
-            'build_installers': True,
-        },
-        'python': {
-            'path': '',
-        },
+
+def dataclass_from_dict(dataclass_type, data):
+    def value_for_field(field_obj):
+        val = data[field_obj.name]
+        if is_dataclass(field_obj.type):
+            return dataclass_from_dict(field_obj.type, val)
+        return val
+
+    kwargs = {
+        field.name: value_for_field(field)
+        for field in fields(dataclass_type)
+        if field.name in data
     }
 
-    PROJECT_CONFIG_NAMES = [
-        'pyproject.toml',
-        '.pman',
-        '.pman.user',
-    ]
+    return dataclass_type(**kwargs)
+
+class ConfigBase:
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+    def __contains__(self, key):
+        return hasattr(self, key)
+
+
+@dataclass
+class GeneralConfig(ConfigBase):
     DEFAULT_PLUGINS = [
         'native2bam',
         'blend2bam',
     ]
 
-    def __init__(self, config_files):
-        confs = []
-        for confpath in config_files:
-            with (open(confpath, 'rb')) as conffile:
-                conf = toml.load(conffile)
-                if 'tool' in conf and 'pman' in conf['tool']:
-                    conf = conf['tool']['pman']
-                confs.append(conf)
+    name: str = 'Game'
+    verbose: bool = False
+    plugins: list[str] = field(default_factory=lambda: ['DefaultPlugins'])
 
-        plugins_list = [
-            conf['general']['plugins']
-            for conf in confs
-            if 'general' in conf and 'plugins' in conf['general']
-        ]
-        if plugins_list:
-            plugins_list = plugins_list[-1]
-        else:
-            plugins_list = self._CONFIG_DEFAULTS['general']['plugins']
+    def __post_init__(self) -> None:
+        defult_plugins_loc = self.plugins.index('DefaultPlugins')
+        self.plugins[defult_plugins_loc:defult_plugins_loc+1] = self.DEFAULT_PLUGINS
 
-        try:
-            defult_plugins_loc = plugins_list.index('DefaultPlugins')
-            plugins_list[defult_plugins_loc:defult_plugins_loc+1] = self.DEFAULT_PLUGINS
-        except ValueError:
-            pass
 
-        plist = plugins.get_plugins(filter_names=plugins_list)
+@dataclass
+class StreamConfig(ConfigBase):
+    plugin: str
+    include_patterns: list[str] = field(default_factory=list)
+    exclude_patterns: list[str] = field(default_factory=list)
+    options: dict[str, Any] = field(default_factory=dict)
 
-        config_defaults = functools.reduce(_merge_dict, [
-            getattr(plugin, 'CONFIG_DEFAULTS', {})
-            for plugin in plist
-        ], self._CONFIG_DEFAULTS)
 
-        super().__init__(functools.reduce(_merge_dict, [
-            {},
-            config_defaults,
-            *confs,
-            {
-                'internal': {
-                    'projectdir': os.path.dirname(config_files[0]),
-                },
-            },
-        ]))
+@dataclass
+class BuildConfig(ConfigBase):
+    asset_dir: str = 'assets/'
+    export_dir: str = '.built_assets/'
+    ignore_patterns: list[str] = field(default_factory=lambda:['*blend1', '*.blend2'])
+    show_all_jobs: bool = False
+    jobs: int = 0
+    streams: list[StreamConfig] = field(default_factory=list)
+
+
+@dataclass
+class RunConfig(ConfigBase):
+    main_file: str = 'main.py'
+    extra_args: str = ''
+    auto_build: bool = True
+
+
+@dataclass
+class DistConfig(ConfigBase):
+    build_installers: bool = True
+
+
+@dataclass
+class PythonConfig(ConfigBase):
+    path: str = ''
+
+
+@dataclass
+class InternalConfig(ConfigBase):
+    projectdir: str = ''
+
+
+@dataclass
+class Config(ConfigBase):
+    PROJECT_CONFIG_NAMES = [
+        'pyproject.toml',
+        '.pman',
+        '.pman.user',
+    ]
+
+    general: GeneralConfig = field(default_factory=GeneralConfig)
+    build: BuildConfig = field(default_factory=BuildConfig)
+    run: RunConfig = field(default_factory=RunConfig)
+    dist: DistConfig = field(default_factory=DistConfig)
+    python: PythonConfig = field(default_factory=PythonConfig)
+    internal: InternalConfig = field(default_factory=InternalConfig)
+    plugins: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
-    def load(cls, startdir):
+    def load(cls, startdir: str) -> 'Config':
         try:
             if startdir is None:
                 startdir = os.getcwd()
@@ -109,6 +134,7 @@ class ConfigDict(collections.UserDict):
             raise NoConfigError("Could not find config file") from exc
 
         dirs = os.path.abspath(startdir).split(os.sep)
+        cfgpaths = None
 
         while dirs:
             cdir = os.sep.join(dirs)
@@ -123,9 +149,44 @@ class ConfigDict(collections.UserDict):
                     for cfgname in cls.PROJECT_CONFIG_NAMES
                     if cfgname in foundcfg
                 ]
-                return cls(cfgpaths)
+                break
 
             dirs.pop()
+
+        if cfgpaths:
+            confs = []
+            for confpath in cfgpaths:
+                with (open(confpath, 'rb')) as conffile:
+                    conf = toml.load(conffile)
+                    if 'tool' in conf and 'pman' in conf['tool']:
+                        conf = conf['tool']['pman']
+                    confs.append(conf)
+
+            confdata = functools.reduce(
+                _merge_dict,
+                [
+                    {},
+                    *confs,
+                    {
+                        'internal': {
+                            'projectdir': os.path.dirname(cfgpaths[0]),
+                        },
+                    },
+                ]
+            )
+            confobj = dataclass_from_dict(cls, confdata)
+            plist = plugins.get_plugins(filter_names=confobj.general.plugins)
+            for pluginobj in plist:
+                if hasattr(pluginobj, 'Config') and hasattr(pluginobj, 'CONFIG_KEY'):
+                    configkey = pluginobj.CONFIG_KEY
+                    configobj = pluginobj.Config
+                    plugconf = dataclass_from_dict(
+                        configobj,
+                        confdata.get(configkey, {})
+                    )
+                    setattr(confobj, configkey, plugconf)
+                    confobj.plugins[configkey] = plugconf
+            return confobj
 
         # No config found
         raise NoConfigError("Could not find config file")

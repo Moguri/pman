@@ -1,6 +1,7 @@
 import os
 
 import pman
+import pman.config
 
 
 #pylint:disable=unused-argument
@@ -23,6 +24,7 @@ def test_load_pyproject(tmpdir):
     conf = pman.get_config()
 
     assert conf['general']['verbose']
+    assert conf.general.verbose
 
 def test_prefer_pman_over_pyproject(tmpdir):
     os.chdir(tmpdir.strpath)
@@ -37,6 +39,7 @@ def test_prefer_pman_over_pyproject(tmpdir):
 
     conf = pman.get_config()
     assert conf['general']['name'] == 'pmanconf'
+    assert conf.general.name == 'pmanconf'
 
 
 def test_conf_contains(projectdir):
@@ -60,16 +63,34 @@ def test_conf_override(projectdir):
     # Check default
     config = pman.get_config()
     assert config['run']['main_file'] == 'main.py'
+    assert config.run.main_file == 'main.py'
     assert not config['general']['verbose']
+    assert not config.general.verbose
 
     # Check that project overrides default
     assert config['build']['export_dir'] == 'assets'
+    assert config.build.export_dir == 'assets'
 
     # Check that user overrides default
     assert config['general']['name'] == 'username'
+    assert config.general.name == 'username'
 
 
 def test_conf_missing(projectdir):
     config = pman.get_config()
     assert config['python']
+    assert config.python
     assert config['blend2bam']
+    assert config.blend2bam  # pylint: disable=no-member
+    assert config.plugins['blend2bam']
+
+def test_dataclass_from_dict():
+    conf: pman.config.Config = pman.config.dataclass_from_dict(pman.config.Config, {
+        'general': { 'verbose': True },
+        'run': { 'main_file': 'foo.py' }
+    })
+
+    print(conf)
+
+    assert conf.general.verbose
+    assert conf.run.main_file == 'foo.py'

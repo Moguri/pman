@@ -1,6 +1,14 @@
+from dataclasses import (
+    dataclass,
+    field,
+)
 import os
 import subprocess
 import sys
+from typing import (
+    Any,
+    Literal,
+)
 
 from .common import (
     ConverterInfo,
@@ -17,17 +25,18 @@ class Blend2BamPlugin:
 
     BATCH_SIZE = 3
 
+    CONFIG_KEY='blend2bam'
+    @dataclass
+    class Config:
+        blender_dir: str = ''
+        material_mode: Literal['pbr', 'legacy'] = 'pbr'
+        physics_engine: Literal['builtin', 'bullet'] = 'builtin'
+        animations: Literal['embed', 'skip'] = 'embed'
+        textures: Literal['ref', 'copy', 'embed'] = 'ref'
+        overrides: dict[str, Any] = field(default_factory=dict)
 
-    CONFIG_DEFAULTS = {
-        'blend2bam': {
-            'blender_dir': '',
-            'material_mode': 'pbr',
-            'physics_engine': 'builtin',
-            'animations': 'embed',
-            'textures': 'ref',
-            'overrides': [],
-        },
-    }
+        def __getitem__(self, key):
+            return getattr(self, key)
 
     def convert(self, config, converter_config, srcdir, dstdir, assets):
         verbose = config['general']['verbose']

@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 from .import plugins
-from .config import ConfigDict
+from .config import Config
 from .exceptions import (
     ConfigError,
     CouldNotFindPythonError,
@@ -75,7 +75,7 @@ def get_config_plugins(config, has_attr=None):
 
 
 def get_config(startdir=None):
-    config = ConfigDict.load(startdir)
+    config = Config.load(startdir)
 
     confpy = config['python']['path']
     if not confpy:

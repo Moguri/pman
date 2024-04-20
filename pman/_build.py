@@ -96,7 +96,8 @@ def generate_auto_streams(config, converters):
     # Build streams for each converter (including overrides)
     streams_with_overrides = []
     for converter, files in streams.items():
-        converter_config = config.get(converter.name, {})
+        confkey = getattr(converter.plugin, 'CONFIG_KEY', converter.name)
+        converter_config = config.plugins.get(confkey, {})
         remaining_files = set(files)
 
         for override in converter_config.get('overrides', []):
@@ -160,7 +161,7 @@ def generate_explicit_streams(config, converters):
         streams.append([
             converter,
             found_assets,
-            config.get(plugin_name, {}) | stream_configs.get('options', {})
+            config.plugins.get(plugin_name, {}) | stream_configs.get('options', {})
         ])
 
     return streams
