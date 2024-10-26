@@ -1,4 +1,4 @@
-![Build Status](https://github.com/Moguri/panda3d-pman/workflows/Pipeline/badge.svg)
+![Build Status](https://github.com/Moguri/pman/workflows/Pipeline/badge.svg)
 [![](https://img.shields.io/github/license/Moguri/pman.svg)](https://choosealicense.com/licenses/mit/)
 
 
