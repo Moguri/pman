@@ -1,4 +1,5 @@
 import argparse
+from importlib.metadata import version
 import subprocess
 import sys
 
@@ -55,7 +56,7 @@ def main():
     parser.add_argument(
         '--version',
         action='version',
-        version=f'%(prog)s {pman.__version__}',
+        version=f'%(prog)s {version("panda3d-pman")}',
     )
 
     parser.add_argument(

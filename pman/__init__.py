@@ -29,6 +29,3 @@ from .exceptions import (
     NoConfigError as NoConfigError,
     PManError as PManError,
 )
-
-# Version
-from .version import __version__ as __version__
