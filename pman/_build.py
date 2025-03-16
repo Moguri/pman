@@ -13,7 +13,7 @@ import time
 
 from rich import (
     live,
-    print,
+    print,  # noqa
     progress,
     table,
 )

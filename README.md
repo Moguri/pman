@@ -15,7 +15,7 @@ pman is a Python package to help bootstrap and manage [Panda3D](https://github.c
 
 ## Installation
 
-Use [pip](https://github.com/panda3d/panda3d) to install the `panda3d-pman` package:
+Use `pip` to install the `panda3d-pman` package:
 
 ```bash
 pip install panda3d-pman
@@ -145,33 +145,28 @@ Section name: `blend2bam`
 |physics_engine|`"builtin"`|The physics engine that collision solids should be built for. To export for Panda's builtin collision system, use "builtin." For Bullet, use "bullet." This is only used by the "gltf" pipeline; the "egg" pipeline always uses "builtin."|
 |pipeline|`"gltf"`|The backend that blend2bam uses to convert blend files. Go [here](https://github.com/Moguri/blend2bam#pipelines) for more information.|
 
-## Running Tests
+## Development
 
-First install the project in editable mode along with `test` extras:
+Development relies on [uv](https://docs.astral.sh/uv/).
 
+### Running Tests
+
+Lint checks:
 ```bash
-pip install -e .[test]
+uv run ruff check
 ```
 
-Then run the test suite with `pytest`:
-
+Unit tests:
 ```bash
-pytest
+uv run pytest
 ```
 
-## Building Wheels
-
-Install `build`:
+### Building Wheels
 
 ```bash
-pip install --upgrade build
+uv build
 ```
 
-and run:
-
-```bash
-python -m build
-```
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
